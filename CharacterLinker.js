@@ -50,9 +50,9 @@ export class CharacterLinker {
 		});
 	}
 	getRadius() {
-		if (this.chars.length>0){
+		if (this.chars.length > 0) {
 			// circumference / number of chars / 2, left 2/5 space for link
-			return this.getOverallRadius() * Math.PI / this.chars.length *3/5;
+			return this.getOverallRadius() * Math.PI / this.chars.length * 3 / 5;
 		}else{
 			return 40;
 		}
@@ -116,6 +116,13 @@ export class CharacterLinker {
 		let color = this.color_input.value;
 		this.links_list.remove(this.node1, this.node2, color, this.nodes);
 	}
+	__test(test_src) {
+		this.node1 = test_src;
+		for (let i = 0; i < this.chars.length; i++) {
+			this.node2 = i;
+			this.addLink();
+		}
+	}
 }
 
 class relationLinkList {
@@ -153,6 +160,15 @@ class relationLinkList {
 			}else{
 				// curve
 				let [x_mid, y_mid] = [this.svg_radius, this.svg_radius];
+				// smoothen to avoid overlap
+				let idx_ratio = Math.abs(d.idx2 - d.idx1) / this.node_len;
+				if (idx_ratio > 0.5) idx_ratio = 1 - idx_ratio;
+				if (idx_ratio < 1 / 4) {
+					let [x_straight_mid, y_straight_mid] = [(x1 + x2) / 2, (y1 + y2) / 2];
+					let center_weigth = idx_ratio * 4;
+					x_mid = x_mid * center_weigth + x_straight_mid * (1 - center_weigth);
+					y_mid = y_mid * center_weigth + y_straight_mid * (1 - center_weigth);
+				}
 				return `M ${x1} ${y1} S ${x_mid} ${y_mid} ${x2} ${y2}`;
 			}
 		};
