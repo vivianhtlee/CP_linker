@@ -7,19 +7,33 @@ function reverseRotation(index, length){
 	return `rotate(${-degree})`;
 };
 
+let getXY=(svg_obj, svg)=>{
+	let p = svg.node().createSVGPoint();
+	let ctm = svg_obj.node().getCTM();
+	p = p.matrixTransform(ctm);
+	return [p.x, p.y];
+}
+
 class CharacterLinker{
 	chars = [];
 	node1 = -1;
 	node2 = -1;
-	constructor(svg_el, add_link_div, addLink_btn, selected_display){
+	constructor(svg_el, add_link_div, selected_display, color_input, addLink_btn, removeLink_btn){
 		// save HTML element
 		this.svg_el = svg_el;
 		this.add_link_div = add_link_div;
-		this.addLink_btn = addLink_btn; 
 		this.selected_display = selected_display;
-		//
+		this.color_input = color_input;
+
+		// this.addLink_btn = addLink_btn;
+		addLink_btn.onclick = this.addLink.bind(this);
+		// this.removeLink_btn = removeLink_btn;
+		removeLink_btn.onclick = this.removeLink.bind(this);
+
 		this.svg = d3.select(svg_el);
 		add_link_div.style.display = 'none';
+		this.links_list = new relationLinkList(this.svg, svg_el);
+		this.chars_layer = this.svg.append('g');
 	}
 	load(data_json){
 		// 0. load data
@@ -40,7 +54,7 @@ class CharacterLinker{
 	plot_characters(){
 		// 1: plot all character in circle after data is loaded
 		let chars = this.chars;
-		this.nodes = this.svg.selectAll(".nodes").data(chars).enter()
+		this.nodes = this.chars_layer.selectAll(".nodes").data(chars).enter()
 			.append('g')
 			.attr('class', 'node')
 			.attr("transform", d => generateTransform(d.idx, chars.length, this.getOverallRadius(), this.getRadius()));
@@ -79,26 +93,61 @@ class CharacterLinker{
 			}
 			this.cir
 				.filter((_,i)=>i==d.idx)
-				.attr('stroke', '#900')
-				.attr('stroke-width', 5);
+				.attr('stroke', '#F00')
+				.attr('stroke-opacity', 0.5)
+				.attr('stroke-width', 10);
 		}
 		this.nodes.on('click', selectNode);
-
-		// 3: select 2 characters -> add link (love/like/dislike)
-		this.addLink_btn.onclick = this.addLink;
 	}
 	addLink(){
-		console.log(`add link between ${this.node1}, ${this.node2}`);
-		// TODO
-		// add links
-		// 4: add curve in canvas
+		let color = this.color_input.value;
+		console.log(`add link between ${this.node1}, ${this.node2}, color: ${color}`);
+		this.links_list.add(this.node1, this.node2, color, this.nodes);
+	}
+	removeLink(){
+		let color = this.color_input.value;
+		console.log(`add link between ${this.node1}, ${this.node2}, color: ${color}`);
+		this.links_list.remove(this.node1, this.node2, color, this.nodes);
+	}
+}
 
-		// 5: allow remove links
+class relationLinkList{
+	constructor(svg, svg_el){
+		this.svg_el = svg_el;
+		this.svg = svg;
+		this.curve_layer = svg.append('g');
+		this.data = [];
+	}
+	add(idx1, idx2, color, nodes){
+		if (idx1>idx2){
+			[idx1, idx2] = [idx2, idx1];
+		}
+		this.remove(idx1, idx2);
+		let node1 = nodes.filter((_,i)=>i==idx1);
+		let node2 = nodes.filter((_,i)=>i==idx2);
+		this.data.push({source: node1, target: node2, color, idx1, idx2});
+		this.drawCurve();
+	}
+	remove(idx1, idx2){
+		this.data = this.data.filter(d=>d.idx1!==idx1 ||d.idx2!==idx2);
+		this.drawCurve();
+	}
+	drawCurve(){
+		const transformFunc = d => {
+			let [x1, y1] = getXY(d.source, this.svg);
+			let [x2, y2] = getXY(d.target, this.svg);
+			return `M ${x1} ${y1} T ${x2} ${y2}`;
+		}
+		this.curve_layer.selectAll('path')
+			.data(this.data)
+			.join('path')
+			.attr('d', transformFunc.bind(this))
+			.attr('stroke', d=>d.color);
 	}
 }
 
 const svg_el = document.getElementById('svg');
 const svg = d3.select(svg_el);
-const add_link_div = document.getElementById('addLink');
-let linker = new CharacterLinker(svg_el, add_link_div, document.getElementById('addLink_btn'), document.getElementById('selected_chars'));
+const add_link_div = document.getElementById('add_link_div');
+let linker = new CharacterLinker(svg_el, add_link_div, document.getElementById('selected_chars'), document.getElementById('color_input'), document.getElementById('addLink_btn'), document.getElementById('removeLink_btn'));
 linker.load('characters.json');
