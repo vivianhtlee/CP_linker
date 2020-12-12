@@ -2,6 +2,7 @@ function generateTransform(index, length, canvas_radius, node_radius){
 	let degree = index/length * 360;
 	return `translate(${canvas_radius}, ${node_radius}) rotate(${degree}, ${0}, ${canvas_radius-2*node_radius})`;
 };
+
 function reverseRotation(index, length){
 	let degree = index/length * 360;
 	return `rotate(${-degree})`;
@@ -12,6 +13,11 @@ let getXY=(svg_obj, svg)=>{
 	let ctm = svg_obj.node().getCTM();
 	p = p.matrixTransform(ctm);
 	return [p.x, p.y];
+}
+
+function is_neighbor(n1, n2, length){
+	let diff = Math.abs(n2-n1);
+	return diff==1 || diff==(length -1);
 }
 
 export class CharacterLinker{
@@ -25,20 +31,18 @@ export class CharacterLinker{
 		this.selected_display = selected_display;
 		this.color_input = color_input;
 
-		// this.addLink_btn = addLink_btn;
 		addLink_btn.onclick = this.addLink.bind(this);
-		// this.removeLink_btn = removeLink_btn;
 		removeLink_btn.onclick = this.removeLink.bind(this);
 
 		this.svg = d3.select(svg_el);
 		add_link_div.style.display = 'none';
-		this.links_list = new relationLinkList(this.svg, svg_el);
+		this.links_list = new relationLinkList(this.svg);
 		this.chars_layer = this.svg.append('g');
 	}
 	load(data_json){
-		// 0. load data
 		d3.json(data_json).then((data)=>{
 			this.chars = data['characters'];
+			this.links_list.node_len = this.chars.length;
 			for (let idx in this.chars){
 				this.chars[idx].idx = idx;
 			}
@@ -112,9 +116,10 @@ export class CharacterLinker{
 }
 
 class relationLinkList{
-	constructor(svg, svg_el){
-		this.svg_el = svg_el;
+	constructor(svg){
 		this.svg = svg;
+		this.node_len = 0;
+		this.svg_radius = this.svg.node().clientWidth/2;
 		this.curve_layer = svg.append('g');
 		this.data = [];
 	}
@@ -139,12 +144,20 @@ class relationLinkList{
 		const transformFunc = d => {
 			let [x1, y1] = getXY(d.source, this.svg);
 			let [x2, y2] = getXY(d.target, this.svg);
-			return `M ${x1} ${y1} T ${x2} ${y2}`;
+			if (is_neighbor(d.idx1, d.idx2, this.node_len)){
+				// straight line
+				return `M ${x1} ${y1} T ${x2} ${y2}`;
+			}else{
+				// curve
+				let [x_mid, y_mid] = [this.svg_radius, this.svg_radius]
+				return `M ${x1} ${y1} S ${x_mid} ${y_mid} ${x2} ${y2}`;
+			}
 		}
 		this.curve_layer.selectAll('path')
 			.data(this.data)
 			.join('path')
 			.attr('d', transformFunc.bind(this))
-			.attr('stroke', d=>d.color);
+			.attr('stroke', d=>d.color)
+			.attr('fill', 'none');
 	}
 }
