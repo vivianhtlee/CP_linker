@@ -50,11 +50,12 @@ export class CharacterLinker {
 		});
 	}
 	getRadius() {
+		let svg_radius = this.getOverallRadius();
 		if (this.chars.length > 0) {
 			// circumference / number of chars / 2, left 2/5 space for link
-			return this.getOverallRadius() * Math.PI / this.chars.length * 3 / 5;
+			return Math.min(svg_radius * Math.PI / this.chars.length * 3 / 5, svg_radius * 0.1);
 		}else{
-			return 40;
+			return svg_radius * 0.1;
 		}
 	}
 	getOverallRadius() {
