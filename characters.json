@@ -1,0 +1,24 @@
+{
+	"characters": [
+		{
+			"name": "a",
+			"img": "https://media.miamiherald.com/static/media/projects/2019/yang-interactive/GenderlessIcon.74c2fa61.jpg"
+		},
+		{
+			"name": "b",
+			"img": "https://media.miamiherald.com/static/media/projects/2019/yang-interactive/GenderlessIcon.74c2fa61.jpg"
+		},
+		{
+			"name": "c",
+			"img": "https://media.miamiherald.com/static/media/projects/2019/yang-interactive/GenderlessIcon.74c2fa61.jpg"
+		},
+		{
+			"name": "d",
+			"img": "https://media.miamiherald.com/static/media/projects/2019/yang-interactive/GenderlessIcon.74c2fa61.jpg"
+		},
+		{
+			"name": "e",
+			"img": "https://media.miamiherald.com/static/media/projects/2019/yang-interactive/GenderlessIcon.74c2fa61.jpg"
+		}
+	]
+}
