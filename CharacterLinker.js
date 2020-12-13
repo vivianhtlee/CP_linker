@@ -20,6 +20,9 @@ function is_neighbor(n1, n2, length) {
 	return diff == 1 || diff == (length - 1);
 }
 
+// TODO 1: adaptive side
+// TODO 2: custom node
+
 export class CharacterLinker {
 	chars = [];
 	node1 = -1;
@@ -31,18 +34,20 @@ export class CharacterLinker {
 
 		this.svg = d3.select(svg_el);
 		add_link_div.style.display = 'none';
-		this.links_list = new relationLinkList(this.svg);
+		this.links_list = new relationLinkList(this.svg, this.getNodeNum.bind(this));
 		this.chars_layer = this.svg.append('g');
 	}
 	load(data_json) {
 		d3.json(data_json).then((data) => {
 			this.chars = data['characters'];
-			this.links_list.node_len = this.chars.length;
 			for (let idx in this.chars) {
 				this.chars[idx].idx = idx;
 			}
 			this.plot_characters();
 		});
+	}
+	getNodeNum() {
+		return this.chars.length;
 	}
 	getRadius() {
 		let svg_radius = this.getOverallRadius();
@@ -120,9 +125,9 @@ export class CharacterLinker {
 }
 
 class relationLinkList {
-	constructor(svg) {
+	constructor(svg, node_len_getter) {
 		this.svg = svg;
-		this.node_len = 0;
+		this.node_len_getter = node_len_getter;
 		this.svg_radius = this.svg.node().clientWidth / 2;
 		this.curve_layer = svg.append('g');
 		this.data = [];
@@ -145,17 +150,18 @@ class relationLinkList {
 		this.drawCurve();
 	}
 	drawCurve() {
+		let node_len = this.node_len_getter();
 		const transformFunc = d => {
 			let [x1, y1] = getXY(d.source, this.svg);
 			let [x2, y2] = getXY(d.target, this.svg);
-			if (is_neighbor(d.idx1, d.idx2, this.node_len)) {
+			if (is_neighbor(d.idx1, d.idx2, node_len)) {
 				// straight line
 				return `M ${x1} ${y1} T ${x2} ${y2}`;
 			}else{
 				// curve
 				let [x_mid, y_mid] = [this.svg_radius, this.svg_radius];
 				// smoothen to avoid overlap
-				let idx_ratio = Math.abs(d.idx2 - d.idx1) / this.node_len;
+				let idx_ratio = Math.abs(d.idx2 - d.idx1) / node_len;
 				if (idx_ratio > 0.5) idx_ratio = 1 - idx_ratio;
 				if (idx_ratio < 1 / 4) {
 					let [x_straight_mid, y_straight_mid] = [(x1 + x2) / 2, (y1 + y2) / 2];
