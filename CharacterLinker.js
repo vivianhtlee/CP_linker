@@ -20,7 +20,6 @@ function is_neighbor(n1, n2, length) {
 	return diff == 1 || diff == (length - 1);
 }
 
-// TODO 1: adaptive side
 // TODO 2: custom node
 // TODO 3: auto sort
 
@@ -40,7 +39,7 @@ export class CharacterLinker {
 
 		this.svg = d3.select(svg_el);
 		add_link_div.style.display = 'none';
-		this.links_list = new relationLinkList(this.svg, this.getNodeNum.bind(this));
+		this.links_list = new relationLinkList(this.svg, this.getNodeNum.bind(this), this.getRadius.bind(this));
 		this.chars_layer = this.svg.append('g');
 	}
 	load(data_json) {
@@ -131,9 +130,11 @@ export class CharacterLinker {
 }
 
 class relationLinkList {
-	constructor(svg, node_len_getter) {
+	constructor(svg, node_len_getter, node_radius_getter) {
 		this.svg = svg;
 		this.node_len_getter = node_len_getter;
+		this.node_radius_getter = node_radius_getter;
+
 		this.svg_radius = this.svg.node().clientWidth / 2;
 		this.curve_layer = svg.append('g');
 		this.data = [];
@@ -157,6 +158,7 @@ class relationLinkList {
 	}
 	drawCurve() {
 		let node_len = this.node_len_getter();
+		let nodeRadius = this.node_radius_getter();
 		const transformFunc = d => {
 			let [x1, y1] = getXY(d.source, this.svg);
 			let [x2, y2] = getXY(d.target, this.svg);
@@ -182,7 +184,8 @@ class relationLinkList {
 			.data(this.data)
 			.join('path')
 			.attr('d', transformFunc.bind(this))
+			.attr('fill', 'none')
 			.attr('stroke', d => d.color)
-			.attr('fill', 'none');
+			.attr('stroke-width', Math.min(2, nodeRadius / 10));
 	}
 }

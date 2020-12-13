@@ -46,8 +46,8 @@ removeLink_btn.onclick = () => {
 	linker.removeLink.call(linker, color);
 };
 
-// linker.load('characters.json');
-linker.load('shorter_char.json');
+linker.load('characters.json');
+
 // setTimeout(() => {
 // 	linker.__test(0, color_input.value);
 // }, 500);
