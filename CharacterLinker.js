@@ -24,15 +24,10 @@ export class CharacterLinker {
 	chars = [];
 	node1 = -1;
 	node2 = -1;
-	constructor(svg_el, add_link_div, selected_display, color_input, addLink_btn, removeLink_btn) {
-		// save HTML element
+	constructor(svg_el, add_link_div, selected_display) {
 		this.svg_el = svg_el;
 		this.add_link_div = add_link_div;
 		this.selected_display = selected_display;
-		this.color_input = color_input;
-
-		addLink_btn.onclick = this.addLink.bind(this);
-		removeLink_btn.onclick = this.removeLink.bind(this);
 
 		this.svg = d3.select(svg_el);
 		add_link_div.style.display = 'none';
@@ -109,12 +104,10 @@ export class CharacterLinker {
 		};
 		this.nodes.on('click', selectNode);
 	}
-	addLink() {
-		let color = this.color_input.value;
+	addLink(color) {
 		this.links_list.add(this.node1, this.node2, color, this.nodes);
 	}
-	removeLink() {
-		let color = this.color_input.value;
+	removeLink(color) {
 		this.links_list.remove(this.node1, this.node2, color, this.nodes);
 	}
 	__test(test_src) {

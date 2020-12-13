@@ -3,6 +3,8 @@ import {CharacterLinker} from './CharacterLinker.js';
 const svg_el = document.getElementById('svg');
 const add_link_div = document.getElementById('add_link_div');
 const color_input = document.getElementById('color_input');
+const addLink_btn = document.getElementById('addLink_btn');
+const removeLink_btn = document.getElementById('removeLink_btn');
 
 
 const color_shortcuts = document.getElementById('color_shortcuts');
@@ -31,7 +33,19 @@ for (let color_btn of color_shortcuts.children) {
 	color_btn.onclick = bind_color;
 }
 
-let linker = new CharacterLinker(svg_el, add_link_div, document.getElementById('selected_chars'), color_input, document.getElementById('addLink_btn'), document.getElementById('removeLink_btn'));
+
+let linker = new CharacterLinker(svg_el, add_link_div, document.getElementById('selected_chars'), color_input);
+
+
+addLink_btn.onclick = () => {
+	let color = color_input.value;
+	linker.addLink.call(linker, color);
+};
+removeLink_btn.onclick = () => {
+	let color = color_input.value;
+	linker.removeLink.call(linker, color);
+};
+
 linker.load('characters.json');
 // setTimeout(() => {
 // 	linker.__test(0);
