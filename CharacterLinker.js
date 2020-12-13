@@ -22,6 +22,7 @@ function is_neighbor(n1, n2, length) {
 
 // TODO 1: adaptive side
 // TODO 2: custom node
+// TODO 3: auto sort
 
 export class CharacterLinker {
 	chars = [];
@@ -31,6 +32,11 @@ export class CharacterLinker {
 		this.svg_el = svg_el;
 		this.add_link_div = add_link_div;
 		this.selected_display = selected_display;
+
+		// set svg size
+		let size = Math.min(window.innerWidth, window.innerHeight * 0.8);
+		svg_el.style.width = `${size}px`;
+		svg_el.style.height = `${size}px`;
 
 		this.svg = d3.select(svg_el);
 		add_link_div.style.display = 'none';
@@ -72,8 +78,8 @@ export class CharacterLinker {
 		let nodeRadius = this.getRadius();
 		this.cir = this.nodes.append('circle')
 			.attr('r', nodeRadius)
-			.attr('stroke', '#333')
-			.attr('stroke-width', 2);
+			.attr('stroke', '#000000')
+			.attr('stroke-width', Math.min(2, nodeRadius / 10));
 
 		this.images = this.nodes.append('image')
 			.attr('xlink:href', d => d.img)
@@ -89,8 +95,8 @@ export class CharacterLinker {
 				return;
 			this.cir
 				.filter((_, i) => i == idx)
-				.attr('stroke', '#333')
-				.attr('stroke-width', 2);
+				.attr('stroke', '#000000')
+				.attr('stroke-width', Math.min(2, nodeRadius / 10));
 		};
 
 		const selectNode = (evt, d) => {
@@ -105,7 +111,7 @@ export class CharacterLinker {
 				.filter((_, i) => i == d.idx)
 				.attr('stroke', '#F00')
 				.attr('stroke-opacity', 0.5)
-				.attr('stroke-width', 10);
+				.attr('stroke-width', nodeRadius / 3);
 		};
 		this.nodes.on('click', selectNode);
 	}
@@ -115,11 +121,11 @@ export class CharacterLinker {
 	removeLink(color) {
 		this.links_list.remove(this.node1, this.node2, color, this.nodes);
 	}
-	__test(test_src) {
+	__test(test_src, color) {
 		this.node1 = test_src;
 		for (let i = 0; i < this.chars.length; i++) {
 			this.node2 = i;
-			this.addLink();
+			this.addLink(color);
 		}
 	}
 }
