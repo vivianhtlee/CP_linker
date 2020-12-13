@@ -77,7 +77,7 @@ export class CharacterLinker {
 		this.cir = this.nodes.append('circle')
 			.attr('r', nodeRadius)
 			.attr('stroke', '#000000')
-			.attr('stroke-width', Math.min(2, nodeRadius / 10));
+			.attr('stroke-width', Math.max(2, nodeRadius / 10));
 
 		this.images = this.nodes.append('image')
 			.attr('xlink:href', d => d.img)
@@ -94,7 +94,7 @@ export class CharacterLinker {
 			this.cir
 				.filter((_, i) => i == idx)
 				.attr('stroke', '#000000')
-				.attr('stroke-width', Math.min(2, nodeRadius / 10));
+				.attr('stroke-width', Math.max(2, nodeRadius / 10));
 		};
 
 		const selectNode = (evt, d) => {
@@ -112,7 +112,7 @@ export class CharacterLinker {
 				.filter((_, i) => i == d.idx)
 				.attr('stroke', '#F00')
 				.attr('stroke-opacity', 0.5)
-				.attr('stroke-width', nodeRadius / 3);
+				.attr('stroke-width', Math.max(4, nodeRadius / 3));
 		};
 		this.nodes.on('click', selectNode);
 	}
@@ -191,7 +191,7 @@ class relationLinkList {
 			.attr('d', transformFunc.bind(this))
 			.attr('fill', 'none')
 			.attr('stroke', d => d.color)
-			.attr('stroke-width', Math.min(2, nodeRadius / 10));
+			.attr('stroke-width', Math.max(2, nodeRadius / 10));
 	}
 	sort(colors_order) {
 		// sort data in reverse order of data (because the later node will draw on top)
