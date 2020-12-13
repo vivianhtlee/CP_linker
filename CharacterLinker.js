@@ -101,9 +101,12 @@ export class CharacterLinker {
 			unselectNode(this.node1);
 			this.node1 = this.node2;
 			this.node2 = d.idx;
-			if (this.node1 >= 0) {
+			if (this.node1 == this.node2 || this.node1 < 0) {
+				this.selected_display.innerHTML = 'Select two characters';
+				this.add_link_div.style.display = 'none';
+			} else {
 				this.selected_display.innerHTML = `${chars[this.node1].name}, ${chars[this.node2].name}`;
-				this.add_link_div.style.display = 'block';
+				this.add_link_div.style.display = 'inline';
 			}
 			this.cir
 				.filter((_, i) => i == d.idx)
