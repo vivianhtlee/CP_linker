@@ -48,6 +48,9 @@ removeLink_btn.onclick = () => {
 
 linker.load('characters.json');
 
+let colors_order = ['#ff0000', '#9933ff', '#ffff00', '#33cc33', '#000000'];
+document.getElementById('sort_btn').onclick = linker.sortLink.bind(linker, colors_order);
+
 // setTimeout(() => {
 // 	linker.__test(0, color_input.value);
 // }, 500);

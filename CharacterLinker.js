@@ -21,7 +21,6 @@ function is_neighbor(n1, n2, length) {
 }
 
 // TODO 2: custom node
-// TODO 3: auto sort
 
 export class CharacterLinker {
 	chars = [];
@@ -67,7 +66,7 @@ export class CharacterLinker {
 		return this.svg_el.clientWidth / 2;
 	}
 	plot_characters() {
-		// 1: plot all character in circle after data is loaded
+		// plot all character in circle after data is loaded
 		let chars = this.chars;
 		this.nodes = this.chars_layer.selectAll('.nodes').data(chars).enter()
 			.append('g')
@@ -126,6 +125,9 @@ export class CharacterLinker {
 			this.node2 = i;
 			this.addLink(color);
 		}
+	}
+	sortLink(colors_order) {
+		this.links_list.sort(colors_order);
 	}
 }
 
@@ -187,5 +189,21 @@ class relationLinkList {
 			.attr('fill', 'none')
 			.attr('stroke', d => d.color)
 			.attr('stroke-width', Math.min(2, nodeRadius / 10));
+	}
+	sort(colors_order) {
+		// sort data in reverse order of data (because the later node will draw on top)
+		this.data.sort((d1, d2) => {
+			// compare function
+			let idx1 = colors_order.indexOf(d1.color);
+			let idx2 = colors_order.indexOf(d2.color);
+			if (idx1 < idx2) {
+				return 1;
+			}else if(idx1 == idx2) {
+				return 0;
+			}else{
+				return -1;
+			}
+		});
+		this.drawCurve();
 	}
 }
