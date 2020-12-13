@@ -1,14 +1,19 @@
-// TODO: do not use rotate on node, get XY and translate it
 // TODO: allow remove character
 
-function generateTransform(index, length, canvas_radius, node_radius) {
+function generateTransform(index, length, canvas_radius, node_radius, svg_el) {
 	let degree = index / length * 360;
-	return `translate(${canvas_radius}, ${node_radius}) rotate(${degree}, ${0}, ${canvas_radius - 2 * node_radius})`;
-}
 
-function reverseRotation(index, length) {
-	let degree = index / length * 360;
-	return `rotate(${-degree})`;
+	let svg_transform = svg_el.createSVGTransform();
+	svg_transform.setTranslate(canvas_radius, node_radius);
+	let M_translate = svg_transform.matrix;
+
+	let svg_transform2 = svg_el.createSVGTransform();
+	svg_transform2.setRotate(degree, 0, canvas_radius - 2 * node_radius);
+	let M_rotate = svg_transform2.matrix;
+
+	let p = svg_el.createSVGPoint();
+	p = p.matrixTransform(M_translate.multiply(M_rotate));
+	return `translate(${p.x}, ${p.y})`;
 }
 
 let getXY = (svg_obj, svg) => {
@@ -45,7 +50,11 @@ export class CharacterLinker {
 		d3.json(data_json).then((data) => {
 			this.chars = data['characters'];
 			for (let idx in this.chars) {
-				this.chars[idx].idx = idx;
+				try{
+					this.chars[idx].idx = parseInt(idx);
+				}catch(err) {
+					this.chars[idx].idx = idx;
+				}
 			}
 			this.plot_characters();
 		});
@@ -70,33 +79,35 @@ export class CharacterLinker {
 		let chars = this.chars;
 		let nodeRadius = this.getRadius();
 
-		this.nodes = this.chars_layer.selectAll('.node').data(chars).enter()
+		let new_nodes = this.chars_layer.selectAll('.node').data(chars).enter()
 			.append('g')
 			.attr('class', 'node')
-			.attr('name', d => d.name);
-		this.chars_layer.selectAll('.node')
-			.attr('transform', d => generateTransform(d.idx, chars.length, this.getOverallRadius(), this.getRadius()));
+			.attr('name', d => d.name); // it only return new nodes
+		this.nodes = this.chars_layer.selectAll('.node');
+		this.nodes
+			.attr('transform', d => generateTransform(d.idx, chars.length, this.getOverallRadius(), this.getRadius(), this.svg_el)); // update all node
 
-		this.cir = this.nodes.append('circle')
+		new_nodes.append('circle')
+			.attr('class', 'node_cir')
 			.attr('r', nodeRadius)
 			.attr('stroke', '#000000')
 			.attr('stroke-width', Math.max(2, nodeRadius / 10));
 
-		this.images = this.nodes.append('image')
+		new_nodes.append('image')
 			.attr('xlink:href', d => d.img)
 			.attr('clip-path', 'circle(50%)')
 			.attr('width', nodeRadius * 2)
 			.attr('height', nodeRadius * 2)
 			.attr('x', nodeRadius * -1)
 			.attr('y', nodeRadius * -1)
-			.attr('class', 'node_img')
-			.attr('transform', d => reverseRotation(d.idx, chars.length));
+			.attr('class', 'node_img');
 
 		const unselectNode = (idx) => {
 			if (idx < 0)
 				return;
-			this.cir
+			this.nodes
 				.filter((_, i) => i == idx)
+				.selectAll('.node_cir')
 				.attr('stroke', '#000000')
 				.attr('stroke-width', Math.max(2, nodeRadius / 10));
 		};
@@ -110,8 +121,9 @@ export class CharacterLinker {
 			} else {
 				this.selectNode_cb(chars[this.node1], chars[this.node2]);
 			}
-			this.cir
+			this.nodes
 				.filter((_, i) => i == d.idx)
+				.selectAll('.node_cir')
 				.attr('stroke', '#F00')
 				.attr('stroke-opacity', 0.5)
 				.attr('stroke-width', Math.max(4, nodeRadius / 3));
