@@ -6,7 +6,7 @@ const color_input = document.getElementById('color_input');
 const addLink_btn = document.getElementById('addLink_btn');
 const removeLink_btn = document.getElementById('removeLink_btn');
 
-
+/* color shortcut: change value of color input via buttons*/
 const color_shortcuts = document.getElementById('color_shortcuts');
 // ref: https://stackoverflow.com/questions/5623838/rgb-to-hex-and-hex-to-rgb
 function componentToHex(c) {
@@ -33,9 +33,30 @@ for (let color_btn of color_shortcuts.children) {
 	color_btn.onclick = bind_color;
 }
 
+const selected_chars = document.getElementById('selected_chars');
+const selected_1_char = document.getElementById('cur_node_name');
+const removeNode_btn = document.getElementById('removeNode_btn');
 
-let linker = new CharacterLinker(svg_el, add_link_div, document.getElementById('selected_chars'), color_input);
+let selectChar_callback = (char1, char2) => {
+	if (char1 != null) {
+		selected_chars.innerHTML = `${char1.name}, ${char2.name}`;
+		add_link_div.style.display = 'inline';
+		selected_1_char.innerHTML = 'Click same character twice';
+		removeNode_btn.style.display = 'none';
+	}else{
+		selected_chars.innerHTML = 'Select two characters';
+		add_link_div.style.display = 'none';
+		selected_1_char.innerHTML = char2.name;
+		removeNode_btn.style.display = 'inline';
+	}
+};
+add_link_div.style.display = 'none';
 
+let linker = new CharacterLinker(svg_el, selectChar_callback);
+linker.load('characters.json');
+// setTimeout(() => {
+// 	linker.__test(0, color_input.value);
+// }, 500);
 
 addLink_btn.onclick = () => {
 	let color = color_input.value;
@@ -46,18 +67,12 @@ removeLink_btn.onclick = () => {
 	linker.removeLink.call(linker, color);
 };
 
-linker.load('characters.json');
-
-let colors_order = ['#ff0000', '#9933ff', '#ffff00', '#33cc33', '#000000'];
-document.getElementById('sort_btn').onclick = linker.sortLink.bind(linker, colors_order);
-
 document.getElementById('addNode_btn').onclick = () => {
 	let new_name = document.getElementById('new_node_name').value;
 	let new_img = document.getElementById('new_node_img').value;
 	linker.addNode.call(linker, new_name, new_img);
 };
-document.getElementById('removeNode_btn').onclick = linker.removeNode.bind(linker);
+removeNode_btn.onclick = linker.removeNode.bind(linker);
 
-// setTimeout(() => {
-// 	linker.__test(0, color_input.value);
-// }, 500);
+let colors_order = ['#ff0000', '#9933ff', '#ffff00', '#33cc33', '#000000'];
+document.getElementById('sort_btn').onclick = linker.sortLink.bind(linker, colors_order);

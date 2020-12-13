@@ -1,3 +1,6 @@
+// TODO: do not use rotate on node, get XY and translate it
+// TODO: allow remove character
+
 function generateTransform(index, length, canvas_radius, node_radius) {
 	let degree = index / length * 360;
 	return `translate(${canvas_radius}, ${node_radius}) rotate(${degree}, ${0}, ${canvas_radius - 2 * node_radius})`;
@@ -25,10 +28,9 @@ export class CharacterLinker {
 	node1 = -1;
 	node2 = -1;
 	nodes = null;
-	constructor(svg_el, add_link_div, selected_display) {
+	constructor(svg_el, selectNode_cb) {
 		this.svg_el = svg_el;
-		this.add_link_div = add_link_div;
-		this.selected_display = selected_display;
+		this.selectNode_cb = selectNode_cb;
 
 		// set svg size
 		let size = Math.min(window.innerWidth, window.innerHeight * 0.75);
@@ -36,7 +38,6 @@ export class CharacterLinker {
 		svg_el.style.height = `${size}px`;
 
 		this.svg = d3.select(svg_el);
-		add_link_div.style.display = 'none';
 		this.links_list = new relationLinkList(this.svg, this.getNodeNum.bind(this), this.getRadius.bind(this));
 		this.chars_layer = this.svg.append('g');
 	}
@@ -67,6 +68,8 @@ export class CharacterLinker {
 	plot_characters() {
 		// plot all character in circle after data is loaded
 		let chars = this.chars;
+		let nodeRadius = this.getRadius();
+
 		this.nodes = this.chars_layer.selectAll('.node').data(chars).enter()
 			.append('g')
 			.attr('class', 'node')
@@ -74,7 +77,6 @@ export class CharacterLinker {
 		this.chars_layer.selectAll('.node')
 			.attr('transform', d => generateTransform(d.idx, chars.length, this.getOverallRadius(), this.getRadius()));
 
-		let nodeRadius = this.getRadius();
 		this.cir = this.nodes.append('circle')
 			.attr('r', nodeRadius)
 			.attr('stroke', '#000000')
@@ -83,11 +85,12 @@ export class CharacterLinker {
 		this.images = this.nodes.append('image')
 			.attr('xlink:href', d => d.img)
 			.attr('clip-path', 'circle(50%)')
-			.attr('transform', d => reverseRotation(d.idx, chars.length))
 			.attr('width', nodeRadius * 2)
 			.attr('height', nodeRadius * 2)
 			.attr('x', nodeRadius * -1)
-			.attr('y', nodeRadius * -1);
+			.attr('y', nodeRadius * -1)
+			.attr('class', 'node_img')
+			.attr('transform', d => reverseRotation(d.idx, chars.length));
 
 		const unselectNode = (idx) => {
 			if (idx < 0)
@@ -103,11 +106,9 @@ export class CharacterLinker {
 			this.node1 = this.node2;
 			this.node2 = d.idx;
 			if (this.node1 == this.node2 || this.node1 < 0) {
-				this.selected_display.innerHTML = 'Select two characters';
-				this.add_link_div.style.display = 'none';
+				this.selectNode_cb(null, chars[this.node2]);
 			} else {
-				this.selected_display.innerHTML = `${chars[this.node1].name}, ${chars[this.node2].name}`;
-				this.add_link_div.style.display = 'inline';
+				this.selectNode_cb(chars[this.node1], chars[this.node2]);
 			}
 			this.cir
 				.filter((_, i) => i == d.idx)
