@@ -51,6 +51,13 @@ linker.load('characters.json');
 let colors_order = ['#ff0000', '#9933ff', '#ffff00', '#33cc33', '#000000'];
 document.getElementById('sort_btn').onclick = linker.sortLink.bind(linker, colors_order);
 
+document.getElementById('addNode_btn').onclick = () => {
+	let new_name = document.getElementById('new_node_name').value;
+	let new_img = document.getElementById('new_node_img').value;
+	linker.addNode.call(linker, new_name, new_img);
+};
+document.getElementById('removeNode_btn').onclick = linker.removeNode.bind(linker);
+
 // setTimeout(() => {
 // 	linker.__test(0, color_input.value);
 // }, 500);

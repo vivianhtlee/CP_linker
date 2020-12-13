@@ -20,19 +20,18 @@ function is_neighbor(n1, n2, length) {
 	return diff == 1 || diff == (length - 1);
 }
 
-// TODO 2: custom node
-
 export class CharacterLinker {
 	chars = [];
 	node1 = -1;
 	node2 = -1;
+	nodes = null;
 	constructor(svg_el, add_link_div, selected_display) {
 		this.svg_el = svg_el;
 		this.add_link_div = add_link_div;
 		this.selected_display = selected_display;
 
 		// set svg size
-		let size = Math.min(window.innerWidth, window.innerHeight * 0.8);
+		let size = Math.min(window.innerWidth, window.innerHeight * 0.75);
 		svg_el.style.width = `${size}px`;
 		svg_el.style.height = `${size}px`;
 
@@ -68,9 +67,11 @@ export class CharacterLinker {
 	plot_characters() {
 		// plot all character in circle after data is loaded
 		let chars = this.chars;
-		this.nodes = this.chars_layer.selectAll('.nodes').data(chars).enter()
+		this.nodes = this.chars_layer.selectAll('.node').data(chars).enter()
 			.append('g')
 			.attr('class', 'node')
+			.attr('name', d => d.name);
+		this.chars_layer.selectAll('.node')
 			.attr('transform', d => generateTransform(d.idx, chars.length, this.getOverallRadius(), this.getRadius()));
 
 		let nodeRadius = this.getRadius();
@@ -115,6 +116,23 @@ export class CharacterLinker {
 				.attr('stroke-width', Math.max(4, nodeRadius / 3));
 		};
 		this.nodes.on('click', selectNode);
+
+		this.links_list.drawCurve();
+		// TODO: on mousedown -> mouseup
+	}
+	addNode(new_name, new_img) {
+		this.chars.push({
+			'name': new_name,
+			'img': new_img,
+			'idx': this.chars.length
+		});
+		this.plot_characters();
+	}
+	removeNode() {
+
+		this.nodes.exit().remove();
+		// TODO: update idx
+		// TODO: update linker data
 	}
 	addLink(color) {
 		this.links_list.add(this.node1, this.node2, color, this.nodes);
@@ -122,15 +140,15 @@ export class CharacterLinker {
 	removeLink(color) {
 		this.links_list.remove(this.node1, this.node2, color, this.nodes);
 	}
+	sortLink(colors_order) {
+		this.links_list.sort(colors_order);
+	}
 	__test(test_src, color) {
 		this.node1 = test_src;
 		for (let i = 0; i < this.chars.length; i++) {
 			this.node2 = i;
 			this.addLink(color);
 		}
-	}
-	sortLink(colors_order) {
-		this.links_list.sort(colors_order);
 	}
 }
 
