@@ -39,6 +39,3 @@ linker.load('data/characters.json');
 ## Use different characters data via URL query
 `?char=<json file url>`
 e.g. `index.html?char=data/shorter_characters.json`
-
-# TODO
-load asset (chacacter json) on url

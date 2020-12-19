@@ -1,9 +1,4 @@
-let getXY = (svg_obj, svg) => {
-	let p = svg.node().createSVGPoint();
-	let ctm = svg_obj.node().getCTM();
-	p = p.matrixTransform(ctm);
-	return [p.x, p.y];
-};
+import {getXY} from './utils.js';
 
 function isNeighbor(n1, n2, length) {
 	let diff = Math.abs(n2 - n1);

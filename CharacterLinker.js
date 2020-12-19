@@ -1,4 +1,5 @@
 import {relationLinkList} from './RelationLinkList.js';
+import {getXY} from './utils.js';
 
 function generateTransform(index, length, canvas_radius, node_radius, svg_el) {
 	let degree = index / length * 360;
@@ -151,6 +152,7 @@ export class CharacterLinker {
 				});
 		});
 
+		// Bind functions
 		const selectNode = (evt, d) => {
 			this.unselectNode(this.node1);
 			this.node1 = this.node2;
@@ -167,7 +169,6 @@ export class CharacterLinker {
 				.attr('stroke-opacity', 0.5)
 				.attr('stroke-width', Math.max(4, nodeRadius / 3));
 		};
-
 		this.nodes.on('click', selectNode);
 
 		const mousedownFunc = (evt, d) => {
@@ -194,6 +195,7 @@ export class CharacterLinker {
 			}
 			this.node_mousedown = -1;
 			evt.stopPropagation(); // do not trigger svg mouseup
+			this.cleanDashLink();
 		};
 		const mouseupFunc = (evt, d) => {
 			dragTo(evt, d.idx);
@@ -210,14 +212,44 @@ export class CharacterLinker {
 			// unselect mousedown
 			this.unselectNode(this.node_mousedown);
 			this.node_mousedown = -1;
+			this.cleanDashLink();
 		};
-
 		this.nodes.on('mousedown', mousedownFunc);
 		this.nodes.on('mouseup', mouseupFunc);
 		this.svg.on('mouseup', releaseOnBgFunc, {'capture': false}); // bubble, after nodes mouse up
 		this.nodes.on('touchstart', mousedownFunc, {'passive': true});
 		this.nodes.on('touchend', touchendFunc);
 		this.svg.on('touchend', releaseOnBgFunc, {'capture': false});
+
+		// draw dash line
+		const movingTo = (evt, x2, y2) => {
+			if (this.node_mousedown >= 0) {
+				let mousedownNode = this.nodes.filter(d => d.idx == this.node_mousedown);
+				let [x1, y1] = getXY(mousedownNode, this.svg);
+				this.cleanDashLink();
+				this.dash_link_layer.append('line')
+					.attr('stroke-dasharray', '5 5')
+					.attr('stroke', this.color_getter())
+					.attr('x1', x1)
+					.attr('y1', y1)
+					.attr('x2', x2)
+					.attr('y2', y2);
+			}
+		};
+		const touchmoveFunc = (evt) => {
+			let changedTouch = evt.changedTouches[0];
+			let [x2, y2] = [changedTouch.clientX, changedTouch.clientY];
+			movingTo(evt, x2, y2);
+		};
+		const mousemoveFunc = (evt) => {
+			let [x2, y2] = [evt.clientX, evt.clientY];
+			movingTo(evt, x2, y2);
+		};
+		this.svg.on('mousemove', mousemoveFunc);
+		this.svg.on('touchmove', touchmoveFunc);
+	}
+	cleanDashLink() {
+		this.dash_link_layer.selectAll('line').remove();
 	}
 	addNode(new_name, new_img) {
 		let new_idx = this.chars[this.chars.length - 1].idx + 1;
@@ -257,6 +289,7 @@ export class CharacterLinker {
 		for (let c in this.chars) {
 			this.unselectNode(c.idx);
 		}
+		this.cleanDashLink();
 	}
 	unselectClickedNodes() {
 		this.unselectNode(this.node1);

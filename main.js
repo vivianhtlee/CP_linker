@@ -1,19 +1,14 @@
 import {CharacterLinker} from './CharacterLinker.js';
 
-const svg_el = document.getElementById('svg');
-const add_link_div = document.getElementById('add_link_div');
 const color_input = document.getElementById('color_input');
-const addLink_btn = document.getElementById('addLink_btn');
-const removeLink_btn = document.getElementById('removeLink_btn');
 
 /* color shortcut: change value of color input via buttons*/
-const color_shortcuts = document.getElementById('color_shortcuts');
-// ref: https://stackoverflow.com/questions/5623838/rgb-to-hex-and-hex-to-rgb
 function componentToHex(c) {
 	var hex = c.toString(16);
 	return hex.length == 1 ? '0' + hex : hex;
 }
 function rgbToHex(rgb) {
+	// ref: https://stackoverflow.com/questions/5623838/rgb-to-hex-and-hex-to-rgb
 	let regex = /\w*\((\d+),\s*(\d+),\s*(\d+)\)/g;
 	let match = regex.exec(rgb);
 	let r = parseInt(match[1]);
@@ -29,13 +24,13 @@ function bind_color() {
 		color_input.value = color;
 	}
 }
-for (let color_btn of color_shortcuts.children) {
+for (let color_btn of document.getElementById('color_shortcuts').children) {
 	color_btn.onclick = bind_color;
 }
 
 const selected_chars = document.getElementById('selected_chars');
 const selected_1_char = document.getElementById('cur_node_name');
-const addNode_btn = document.getElementById('addNode_btn');
+const add_link_div = document.getElementById('add_link_div');
 const removeNode_btn = document.getElementById('removeNode_btn');
 
 let selectChar_callback = (char1, char2) => {
@@ -64,7 +59,7 @@ const color_getter = () => {
 	return color_input.value;
 };
 
-let linker = new CharacterLinker(svg_el, selectChar_callback, color_getter);
+let linker = new CharacterLinker(document.getElementById('svg'), selectChar_callback, color_getter);
 // load data
 const urlParams = new URLSearchParams(window.location.search);
 let characters_json_file = urlParams.get('char'); // xxxx.html?char=<url>;
@@ -75,16 +70,16 @@ linker.load(characters_json_file);
 // 	linker.__test(25, color_input.value);
 // }, 500);
 
-addLink_btn.onclick = () => {
+document.getElementById('addLink_btn').onclick = () => {
 	let color = color_input.value;
 	linker.addLink.call(linker, color);
 };
-removeLink_btn.onclick = () => {
+document.getElementById('removeLink_btn').onclick = () => {
 	let color = color_input.value;
 	linker.removeLink.call(linker, color);
 };
 
-addNode_btn.onclick = () => {
+document.getElementById('addNode_btn').onclick = () => {
 	let new_name = document.getElementById('new_node_name').value;
 	let new_img = document.getElementById('new_node_img').value;
 	linker.addNode.call(linker, new_name, new_img);
