@@ -1,6 +1,5 @@
 import {relationLinkList} from './RelationLinkList.js';
 
-// TODO: select 2 character by mousedown -> drag -> mouseup
 function generateTransform(index, length, canvas_radius, node_radius, svg_el) {
 	let degree = index / length * 360;
 
@@ -115,7 +114,8 @@ export class CharacterLinker {
 			.text(d => d.name)
 			.attr('text-anchor', 'middle')
 			.attr('dominant-baseline', 'central')
-			.attr('transform', (d, index) => generateLabelTransform(index, chars.length, nodeRadius, this.svg_el));
+			.attr('transform', (d, index) => generateLabelTransform(index, chars.length, nodeRadius, this.svg_el))
+			.style('user-select', 'none');
 
 		this.nodes = this.chars_layer.selectAll('.node'); // all nodes
 		this.nodes
@@ -130,7 +130,6 @@ export class CharacterLinker {
 				.attr('stroke', '#000000')
 				.attr('stroke-width', Math.max(2, nodeRadius / 10));
 		};
-
 		const selectNode = (evt, d) => {
 			unselectNode(this.node1);
 			this.node1 = this.node2;
@@ -143,14 +142,46 @@ export class CharacterLinker {
 			this.nodes
 				.filter(cur_d => cur_d.idx == d.idx)
 				.selectAll('.node_cir')
-				.attr('stroke', '#F00')
+				.attr('stroke', '#ff0000')
 				.attr('stroke-opacity', 0.5)
 				.attr('stroke-width', Math.max(4, nodeRadius / 3));
 		};
+
 		this.nodes.on('click', selectNode);
 
+		const mousedownFunc = (evt, d) => {
+			if (this.node_mousedown > 0 )unselectNode(this.node_mousedown);
+			this.node_mousedown = d.idx;
+			this.nodes
+				.filter(cur_d => cur_d.idx == d.idx)
+				.selectAll('.node_cir')
+				.attr('stroke', '#0000ff')
+				.attr('stroke-opacity', 0.5)
+				.attr('stroke-width', Math.max(4, nodeRadius / 3));
+		};
+		const mouseupFunc = (evt, d) => {
+			this.node_mouseup = d.idx;
+			if (this.node_mousedown > 0 ) {
+				if(this.node_mousedown != d.idx) {
+					let color = document.getElementById('color_input').value; // tmp
+					this.links_list.add(this.node_mousedown, d.idx, color, this.nodes);
+					unselectNode(this.node_mousedown);
+					// also clear clicked node
+					unselectNode(this.node1);
+					unselectNode(this.node2);
+					this.node1 = this.node2 = -1;
+					this.selectNode_cb(null, null);
+
+				}
+			}
+			this.node_mousedown = -1;
+		};
+		this.nodes.on('mousedown', mousedownFunc);
+		this.nodes.on('mouseup', mouseupFunc);
+		this.nodes.on('touchstart', mousedownFunc);
+		this.nodes.on('touchend', mouseupFunc);
+
 		this.links_list.drawCurve();
-		// TODO: on mousedown -> mouseup
 	}
 	addNode(new_name, new_img) {
 		let new_idx = this.chars[this.chars.length - 1].idx + 1;
