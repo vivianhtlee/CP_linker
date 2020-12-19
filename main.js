@@ -1,4 +1,5 @@
 import {CharacterLinker} from './CharacterLinker.js';
+import {rgbToHex} from './utils.js';
 
 // parse url query
 const urlParams = new URLSearchParams(window.location.search);
@@ -32,20 +33,7 @@ if (!lang) lang = 'en'; // or zh
 
 const color_input = document.getElementById('color_input');
 
-/* color shortcut: change value of color input via buttons*/
-function componentToHex(c) {
-	var hex = c.toString(16);
-	return hex.length == 1 ? '0' + hex : hex;
-}
-function rgbToHex(rgb) {
-	// ref: https://stackoverflow.com/questions/5623838/rgb-to-hex-and-hex-to-rgb
-	let regex = /\w*\((\d+),\s*(\d+),\s*(\d+)\)/g;
-	let match = regex.exec(rgb);
-	let r = parseInt(match[1]);
-	let g = parseInt(match[2]);
-	let b = parseInt(match[3]);
-	return '#' + componentToHex(r) + componentToHex(g) + componentToHex(b);
-}
+/* color shortcut: change value of color input via buttons */
 function bind_color() {
 	let color = this.style['background-color'];
 	try{
@@ -90,8 +78,7 @@ const color_getter = () => {
 };
 
 let linker = new CharacterLinker(document.getElementById('svg'), selectChar_callback, color_getter);
-// load data
-linker.load(characters_json_file);
+linker.load(characters_json_file); // load data
 // setTimeout(() => {
 // 	linker.__test(25, color_input.value);
 // }, 500);
