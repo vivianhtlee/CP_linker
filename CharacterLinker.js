@@ -107,20 +107,29 @@ export class CharacterLinker {
 		// add name label among curved path
 		// A - arcs: x-radius y-radius x-axis-rotation large-arc-flag sweep-flag(clockwise) x y
 		// draw 2 half circle->full circle
-		let labelRadius = nodeRadius * 1.1;
+		let labelRadius = nodeRadius * 1;
 		new_nodes
 			// .append('def') // def path canot be transformed?
 			.append('path')
 			.attr('fill', 'none')
-			.attr('d',
-				`M 0 ${labelRadius} A ${labelRadius} ${labelRadius} 0 0 1 0 ${-labelRadius}`
-				+ ` A ${labelRadius} ${labelRadius} 0 0 1 0 ${labelRadius}`
-			)
+			.attr('d', (d, index) => {
+				let degree = index / chars.length;
+				let sweepFlag = (degree > 0.25 && degree < 0.75) ? 0 : 1;
+				return `M 0 ${labelRadius} A ${labelRadius} ${labelRadius} 0 0 ${sweepFlag} 0 ${-labelRadius}`
+				+ ` A ${labelRadius} ${labelRadius} 0 0 ${sweepFlag} 0 ${labelRadius}`;
+			})
 			.attr('transform', (d, index) => `rotate(${index / chars.length * 360})`)
 			.attr('id', d => `textpath_${d.idx}`);
 		new_nodes.append('text')
 			.attr('text-anchor', 'middle')
-			// .attr('dominant-baseline', 'central')
+			.attr('dominant-baseline', (d, index) => {
+				let degree = index / chars.length;
+				if(degree > 0.25 && degree < 0.75) {
+					return 'hanging';
+				}else{
+					return 'text-top';
+				}
+			})
 			.style('user-select', 'none')
 			.append('textPath')
 			.attr('href', (d) => `#textpath_${d.idx}`)
