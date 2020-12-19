@@ -42,9 +42,10 @@ export class CharacterLinker {
 	node1 = -1;
 	node2 = -1;
 	nodes = null;
-	constructor(svg_el, selectNode_cb) {
+	constructor(svg_el, selectNode_cb, color_getter = null) {
 		this.svg_el = svg_el;
 		this.selectNode_cb = selectNode_cb;
+		this.color_getter = color_getter;
 
 		// set svg size
 		let size = Math.min(window.innerWidth, window.innerHeight * 0.75);
@@ -163,7 +164,7 @@ export class CharacterLinker {
 			this.node_mouseup = d.idx;
 			if (this.node_mousedown > 0 ) {
 				if(this.node_mousedown != d.idx) {
-					let color = document.getElementById('color_input').value; // tmp
+					let color = this.color_getter();
 					this.links_list.add(this.node_mousedown, d.idx, color, this.nodes);
 					unselectNode(this.node_mousedown);
 					// also clear clicked node
@@ -204,10 +205,12 @@ export class CharacterLinker {
 		this.node1 = this.node2 = -1;
 		this.selectNode_cb(null, null);
 	}
-	addLink(color) {
+	addLink(color = null) {
+		if (!color) color = this.color_getter();
 		this.links_list.add(this.node1, this.node2, color, this.nodes);
 	}
-	removeLink(color) {
+	removeLink(color = null) {
+		if (!color) color = this.color_getter();
 		this.links_list.remove(this.node1, this.node2, color, this.nodes);
 	}
 	sortLink(colors_order) {

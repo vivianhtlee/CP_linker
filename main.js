@@ -59,7 +59,11 @@ let selectChar_callback = (char1, char2) => {
 };
 selectChar_callback(null, null);
 
-let linker = new CharacterLinker(svg_el, selectChar_callback);
+const color_getter = () => {
+	return color_input.value;
+};
+
+let linker = new CharacterLinker(svg_el, selectChar_callback, color_getter);
 linker.load('characters.json');
 // setTimeout(() => {
 // 	linker.__test(25, color_input.value);
