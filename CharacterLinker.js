@@ -105,13 +105,13 @@ export class CharacterLinker {
 
 		new_nodes.append('image')
 			.attr('class', 'node_img')
-			.attr('xlink:href', d => d.img)
-			.attr('clip-path', 'circle(50%)');
+			.attr('xlink:href', d => d.img);
 		this.nodes.selectAll('.node_img')
 			.attr('width', nodeRadius * 2)
 			.attr('height', nodeRadius * 2)
 			.attr('x', nodeRadius * -1)
-			.attr('y', nodeRadius * -1);
+			.attr('y', nodeRadius * -1)
+			.attr('clip-path', `circle(${nodeRadius})`); // patch: browser cannot update circle(50%) after resize
 
 		// add name label among curved path
 		new_nodes
@@ -250,7 +250,7 @@ export class CharacterLinker {
 		this.dash_link_layer.selectAll('line').remove();
 	}
 	addNode(new_name, new_img) {
-		let new_idx = this.chars[this.chars.length - 1].idx + 1;
+		let new_idx = (this.chars.length>0) ? this.chars[this.chars.length - 1].idx + 1: 1;
 		this.chars.push({
 			'name': new_name,
 			'img': new_img,
