@@ -53,7 +53,7 @@ export class CharacterLinker {
 		svg_el.style.height = `${size}px`;
 
 		this.svg = d3.select(svg_el);
-		this.links_list = new relationLinkList(this.svg, this.getNodeNum.bind(this), this.getRadius.bind(this));
+		this.links_list = new relationLinkList(this.svg, this.getNodes.bind(this), this.getRadius.bind(this));
 		this.chars_layer = this.svg.append('g');
 	}
 	load(data_json) {
@@ -69,8 +69,8 @@ export class CharacterLinker {
 			this.plot_characters();
 		});
 	}
-	getNodeNum() {
-		return this.chars.length;
+	getNodes() {
+		return this.nodes;
 	}
 	getRadius() {
 		let svg_radius = this.getOverallRadius();
@@ -153,7 +153,7 @@ export class CharacterLinker {
 		this.nodes.on('click', selectNode);
 
 		const mousedownFunc = (evt, d) => {
-			if (this.node_mousedown > 0 )
+			if (this.node_mousedown >= 0 )
 				this.unselectNode(this.node_mousedown);
 			this.node_mousedown = d.idx;
 			this.nodes
@@ -165,22 +165,29 @@ export class CharacterLinker {
 		};
 		const mouseupFunc = (evt, d) => {
 			this.node_mouseup = d.idx;
-			if (this.node_mousedown > 0 ) {
+			if (this.node_mousedown >= 0 ) {
 				if(this.node_mousedown != d.idx) {
 					let color = this.color_getter();
 					this.links_list.add(this.node_mousedown, d.idx, color, this.nodes);
 					this.unselectNode(this.node_mousedown);
 					this.unselectClickedNodes();
 				}
-				this.node_mousedown = -1;
+				// let node click handle it
 			}
+			this.node_mousedown = -1;
+			evt.stopPropagation(); // do not trigger svg mouseup
+		};
+		const releaseOnBgFunc = () => {
+			// unselect mousedown
+			this.unselectNode(this.node_mousedown);
+			this.node_mousedown = -1;
 		};
 		this.nodes.on('mousedown', mousedownFunc);
 		this.nodes.on('mouseup', mouseupFunc);
+		this.svg.on('mouseup', releaseOnBgFunc, {'capture': false}); // bubble, after nodes mouse up
 		this.nodes.on('touchstart', mousedownFunc, {'passive': true});
 		this.nodes.on('touchend', mouseupFunc);
-
-		this.links_list.drawCurve();
+		this.svg.on('touchend', releaseOnBgFunc, {'capture': false});
 	}
 	addNode(new_name, new_img) {
 		let new_idx = this.chars[this.chars.length - 1].idx + 1;
@@ -193,15 +200,14 @@ export class CharacterLinker {
 		this.links_list.addNode(new_idx); // update linker data
 	}
 	removeNode() {
-		if(this.node1 != -1 && this.node1 != this.node2)
+		if(this.node1 >= 0 && this.node1 != this.node2)
 			return;
 		let target_idx = this.node2;
 		this.chars = this.chars.filter(c => c.idx != target_idx);
-		this.nodes.filter(d => d.idx == target_idx).remove(); // exit() only take last data :(
+		this.nodes.filter(d => d.idx == target_idx).remove();
 		this.plot_characters();
 		this.links_list.removeNode(target_idx); // update linker data
-		this.node1 = this.node2 = -1;
-		this.selectNode_cb(null, null);
+		this.unselectClickedNodes();
 	}
 	addLink(color = null) {
 		if (!color) color = this.color_getter();
@@ -216,7 +222,11 @@ export class CharacterLinker {
 	}
 	unselectAllNodes() {
 		this.unselectNode(this.node_mousedown);
+		this.node_mousedown = -1;
 		this.unselectClickedNodes();
+		for (let c in this.chars) {
+			this.unselectNode(c.idx);
+		}
 	}
 	unselectClickedNodes() {
 		this.unselectNode(this.node1);

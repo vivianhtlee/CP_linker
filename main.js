@@ -39,11 +39,11 @@ const addNode_btn = document.getElementById('addNode_btn');
 const removeNode_btn = document.getElementById('removeNode_btn');
 
 let selectChar_callback = (char1, char2) => {
-	if (char1 != null) {
-		selected_1_char.innerHTML = 'Click same character twice';
-		removeNode_btn.style.display = 'none';
-	}else if(char2 == null) {
+	if(char2 == null) {
 		selected_1_char.innerHTML = 'Select character';
+		removeNode_btn.style.display = 'none';
+	}else if (char1 != null) {
+		selected_1_char.innerHTML = 'Click same character twice';
 		removeNode_btn.style.display = 'none';
 	}else{
 		selected_1_char.innerHTML = char2.name;
