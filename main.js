@@ -35,10 +35,12 @@ const removeNode_btn = document.getElementById('removeNode_btn');
 
 let selectChar_callback = (char1, char2) => {
 	if(char2 == null) {
-		selected_1_char.innerHTML = 'Select character';
+		// selected_1_char.innerHTML = 'Select character';
+		selected_1_char.innerHTML = '選擇1個角色';
 		removeNode_btn.style.display = 'none';
 	}else if (char1 != null) {
-		selected_1_char.innerHTML = 'Click same character twice';
+		// selected_1_char.innerHTML = 'Click same character twice';
+		selected_1_char.innerHTML = '點選同一角色兩次';
 		removeNode_btn.style.display = 'none';
 	}else{
 		selected_1_char.innerHTML = char2.name;
@@ -49,7 +51,8 @@ let selectChar_callback = (char1, char2) => {
 		selected_chars.innerHTML = `${char1.name}, ${char2.name}`;
 		add_link_div.style.display = 'inline';
 	}else{
-		selected_chars.innerHTML = 'Select two characters or drag between characters';
+		// selected_chars.innerHTML = 'Select or connect two characters';
+		selected_chars.innerHTML = '選擇或連接2個角色';
 		add_link_div.style.display = 'none';
 	}
 };

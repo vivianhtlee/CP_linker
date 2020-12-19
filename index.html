@@ -32,12 +32,21 @@
     </div>
     <br>
     <div id="custom_node">
-        Add / Remove Character<br>
-        name: <input id="new_node_name" value='abc'> image:<input id="new_node_img" value="img/person-fill.svg">
-        <input type="file" id="load_img"/>
-         <input type="button" id="addNode_btn" value="+">
+        <div id="add_node_div">
+            <!-- Add Character -->
+            新增角色
+            <br>
+            name: <input id="new_node_name" value='abc'> image:<input id="new_node_img" value="img/person-fill.svg">
+            <input type="file" id="load_img"/>
+            <input type="button" id="addNode_btn" value="+">
+        </div>
         <br>
-        name: <span id="cur_node_name"></span> <input type="button" id="removeNode_btn" value="-">
+        <div id="remove_node_div">
+            <!-- Remove Character -->
+            移除角色
+            <br>
+            name: <span id="cur_node_name"></span> <input type="button" id="removeNode_btn" value="-">
+        </div>
     </div>
     <script type="module" src="main.js"></script>
 </body>
