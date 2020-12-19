@@ -65,7 +65,12 @@ const color_getter = () => {
 };
 
 let linker = new CharacterLinker(svg_el, selectChar_callback, color_getter);
-linker.load('characters.json');
+// load data
+const urlParams = new URLSearchParams(window.location.search);
+let characters_json_file = urlParams.get('char'); // xxxx.html?char=<url>;
+if (!characters_json_file) // use default
+	characters_json_file = 'data/characters.json';
+linker.load(characters_json_file);
 // setTimeout(() => {
 // 	linker.__test(25, color_input.value);
 // }, 500);

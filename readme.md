@@ -1,3 +1,4 @@
+# User Manual
 ## Add link
 2 ways to add link
 ### Method 1
@@ -29,6 +30,15 @@ sort links by color
 
 ## Unselect
 1. click [unselect]
+
+# Get Start
+```
+let linker = new CharacterLinker(svg_el, selectChar_callback, color_getter);
+linker.load('data/characters.json');
+```
+## Use different characters data via URL query
+`?char=<json file url>`
+e.g. `index.html?char=data/shorter_characters.json`
 
 # TODO
 load asset (chacacter json) on url

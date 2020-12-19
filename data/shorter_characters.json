@@ -1,0 +1,28 @@
+{
+	"characters": [
+		{
+			"name": "a",
+			"img": "img/person-fill.svg"
+		},
+		{
+			"name": "b",
+			"img": "img/person-fill.svg"
+		},
+		{
+			"name": "c",
+			"img": "img/person-fill.svg"
+		},
+		{
+			"name": "d",
+			"img": "img/person-fill.svg"
+		},
+		{
+			"name": "e",
+			"img": "img/person-fill.svg"
+		},
+		{
+			"name": "f",
+			"img": "img/person-fill.svg"
+		}
+	]
+}
