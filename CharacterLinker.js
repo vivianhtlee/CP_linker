@@ -114,7 +114,6 @@ export class CharacterLinker {
 			.attr('y', nodeRadius * -1);
 
 		// add name label among curved path
-		let labelRadius = nodeRadius * 1;
 		new_nodes
 			// .append('def') // def path canot be transformed?
 			.append('path')
@@ -136,11 +135,10 @@ export class CharacterLinker {
 					// draw 2 half circle->full circle
 					let degree = index / chars.length;
 					let sweepFlag = (degree > 0.25 && degree < 0.75) ? 0 : 1;
-					return `M 0 ${labelRadius} A ${labelRadius} ${labelRadius} 0 0 ${sweepFlag} 0 ${-labelRadius}`
-					+ ` A ${labelRadius} ${labelRadius} 0 0 ${sweepFlag} 0 ${labelRadius}`;
+					return `M 0 ${nodeRadius} A ${nodeRadius} ${nodeRadius} 0 0 ${sweepFlag} 0 ${-nodeRadius}`
+					+ ` A ${nodeRadius} ${nodeRadius} 0 0 ${sweepFlag} 0 ${nodeRadius}`;
 				})
 				.attr('transform', `rotate(${index / chars.length * 360})`);
-
 			d3.select(this).selectAll('textPath')
 				.attr('dominant-baseline', () => {
 					let degree = index / chars.length;
