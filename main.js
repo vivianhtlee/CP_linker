@@ -39,23 +39,30 @@ const removeNode_btn = document.getElementById('removeNode_btn');
 
 let selectChar_callback = (char1, char2) => {
 	if (char1 != null) {
-		selected_chars.innerHTML = `${char1.name}, ${char2.name}`;
-		add_link_div.style.display = 'inline';
 		selected_1_char.innerHTML = 'Click same character twice';
 		removeNode_btn.style.display = 'none';
+	}else if(char2 == null) {
+		selected_1_char.innerHTML = 'Select character';
+		removeNode_btn.style.display = 'none';
 	}else{
-		selected_chars.innerHTML = 'Select two characters';
-		add_link_div.style.display = 'none';
 		selected_1_char.innerHTML = char2.name;
 		removeNode_btn.style.display = 'inline';
 	}
+
+	if (char1 != null && char2 != null) {
+		selected_chars.innerHTML = `${char1.name}, ${char2.name}`;
+		add_link_div.style.display = 'inline';
+	}else{
+		selected_chars.innerHTML = 'Select two characters';
+		add_link_div.style.display = 'none';
+	}
 };
-add_link_div.style.display = 'none';
+selectChar_callback(null, null);
 
 let linker = new CharacterLinker(svg_el, selectChar_callback);
 linker.load('characters.json');
 // setTimeout(() => {
-// 	linker.__test(0, color_input.value);
+// 	linker.__test(25, color_input.value);
 // }, 500);
 
 addLink_btn.onclick = () => {

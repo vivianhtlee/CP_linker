@@ -1,4 +1,6 @@
 // TODO: allow remove character
+// TODO: show name around character, rotate
+// TODO: select 2 character by mousedown -> drag -> mouseup
 
 function generateTransform(index, length, canvas_radius, node_radius, svg_el) {
 	let degree = index / length * 360;
@@ -26,6 +28,10 @@ let getXY = (svg_obj, svg) => {
 function is_neighbor(n1, n2, length) {
 	let diff = Math.abs(n2 - n1);
 	return diff == 1 || diff == (length - 1);
+}
+
+function searchIndex(data, idx) {
+	return data.filter(d => d.idx == idx)[0];
 }
 
 export class CharacterLinker {
@@ -83,30 +89,31 @@ export class CharacterLinker {
 			.append('g')
 			.attr('class', 'node')
 			.attr('name', d => d.name); // it only return new nodes
-		this.nodes = this.chars_layer.selectAll('.node');
-		this.nodes
-			.attr('transform', d => generateTransform(d.idx, chars.length, this.getOverallRadius(), this.getRadius(), this.svg_el)); // update all node
 
 		new_nodes.append('circle')
-			.attr('class', 'node_cir')
 			.attr('r', nodeRadius)
+			.attr('class', 'node_cir')
 			.attr('stroke', '#000000')
 			.attr('stroke-width', Math.max(2, nodeRadius / 10));
 
 		new_nodes.append('image')
+			.attr('class', 'node_img')
 			.attr('xlink:href', d => d.img)
 			.attr('clip-path', 'circle(50%)')
 			.attr('width', nodeRadius * 2)
 			.attr('height', nodeRadius * 2)
 			.attr('x', nodeRadius * -1)
-			.attr('y', nodeRadius * -1)
-			.attr('class', 'node_img');
+			.attr('y', nodeRadius * -1);
 
-		const unselectNode = (idx) => {
-			if (idx < 0)
+		this.nodes = this.chars_layer.selectAll('.node'); // all nodes
+		this.nodes
+			.attr('transform', (d, index) => generateTransform(index, chars.length, this.getOverallRadius(), this.getRadius(), this.svg_el)); // update all node
+
+		const unselectNode = (id) => {
+			if (id < 0)
 				return;
 			this.nodes
-				.filter((_, i) => i == idx)
+				.filter(cur_d => cur_d.idx == id)
 				.selectAll('.node_cir')
 				.attr('stroke', '#000000')
 				.attr('stroke-width', Math.max(2, nodeRadius / 10));
@@ -117,12 +124,12 @@ export class CharacterLinker {
 			this.node1 = this.node2;
 			this.node2 = d.idx;
 			if (this.node1 == this.node2 || this.node1 < 0) {
-				this.selectNode_cb(null, chars[this.node2]);
+				this.selectNode_cb(null, searchIndex(chars, this.node2));
 			} else {
-				this.selectNode_cb(chars[this.node1], chars[this.node2]);
+				this.selectNode_cb(searchIndex(chars, this.node1), searchIndex(chars, this.node2));
 			}
 			this.nodes
-				.filter((_, i) => i == d.idx)
+				.filter(cur_d => cur_d.idx == d.idx)
 				.selectAll('.node_cir')
 				.attr('stroke', '#F00')
 				.attr('stroke-opacity', 0.5)
@@ -134,18 +141,25 @@ export class CharacterLinker {
 		// TODO: on mousedown -> mouseup
 	}
 	addNode(new_name, new_img) {
+		let new_idx = this.chars[this.chars.length - 1].idx + 1;
 		this.chars.push({
 			'name': new_name,
 			'img': new_img,
-			'idx': this.chars.length
+			'idx': new_idx
 		});
 		this.plot_characters();
+		this.links_list.addNode(new_idx); // update linker data
 	}
 	removeNode() {
-
-		this.nodes.exit().remove();
-		// TODO: update idx
-		// TODO: update linker data
+		if(this.node1 != -1 && this.node1 != this.node2)
+			return;
+		let target_idx = this.node2;
+		this.chars = this.chars.filter(c => c.idx != target_idx);
+		this.nodes.filter(d => d.idx == target_idx).remove(); // exit() only take last data :(
+		this.plot_characters();
+		this.links_list.removeNode(target_idx); // update linker data
+		this.node1 = this.node2 = -1;
+		this.selectNode_cb(null, null);
 	}
 	addLink(color) {
 		this.links_list.add(this.node1, this.node2, color, this.nodes);
@@ -166,6 +180,8 @@ export class CharacterLinker {
 }
 
 class relationLinkList {
+	data = [];
+	nodesIndex = [];
 	constructor(svg, node_len_getter, node_radius_getter) {
 		this.svg = svg;
 		this.node_len_getter = node_len_getter;
@@ -173,39 +189,41 @@ class relationLinkList {
 
 		this.svg_radius = this.svg.node().clientWidth / 2;
 		this.curve_layer = svg.append('g');
-		this.data = [];
 	}
 	add(idx1, idx2, color, nodes) {
-		if (idx1 > idx2) {
+		this.nodesIndex = nodes.data().map(d => d.idx);
+		if (idx1 > idx2)
 			[idx1, idx2] = [idx2, idx1];
-		}
 		this.remove(idx1, idx2);
-		let node1 = nodes.filter((_, i) => i == idx1);
-		let node2 = nodes.filter((_, i) => i == idx2);
-		this.data.push({source: node1, target: node2, color, idx1, idx2});
+		let node1 = nodes.filter(d => d.idx == idx1);
+		let node2 = nodes.filter(d => d.idx == idx2);
+		this.data.push({source: node1, target: node2, color});
 		this.drawCurve();
 	}
 	remove(idx1, idx2) {
 		if (idx1 > idx2) {
 			[idx1, idx2] = [idx2, idx1];
 		}
-		this.data = this.data.filter(d => d.idx1 !== idx1 || d.idx2 !== idx2);
+		this.data = this.data.filter(d => d.source.idx !== idx1 || d.target.idx2 !== idx2);
 		this.drawCurve();
 	}
 	drawCurve() {
 		let node_len = this.node_len_getter();
 		let nodeRadius = this.node_radius_getter();
 		const transformFunc = d => {
+			// with remove node feature implemented, idx do not represent the real index anymore
+			let idx1 = this.nodesIndex.indexOf(d.source.data()[0].idx);
+			let idx2 = this.nodesIndex.indexOf(d.target.data()[0].idx);
 			let [x1, y1] = getXY(d.source, this.svg);
 			let [x2, y2] = getXY(d.target, this.svg);
-			if (is_neighbor(d.idx1, d.idx2, node_len)) {
+			if (is_neighbor(idx1, idx2, node_len)) {
 				// straight line
 				return `M ${x1} ${y1} T ${x2} ${y2}`;
 			}else{
 				// curve
 				let [x_mid, y_mid] = [this.svg_radius, this.svg_radius];
 				// smoothen to avoid overlap
-				let idx_ratio = Math.abs(d.idx2 - d.idx1) / node_len;
+				let idx_ratio = Math.abs(idx2 - idx1) / node_len;
 				if (idx_ratio > 0.5) idx_ratio = 1 - idx_ratio;
 				if (idx_ratio < 1 / 4) {
 					let [x_straight_mid, y_straight_mid] = [(x1 + x2) / 2, (y1 + y2) / 2];
@@ -238,6 +256,15 @@ class relationLinkList {
 				return -1;
 			}
 		});
+		this.drawCurve();
+	}
+	addNode(idx) {
+		this.nodesIndex.push(idx);
+		this.drawCurve();
+	}
+	removeNode(idx) {
+		this.data = this.data.filter(link => (link.idx1 != idx && link.idx2 != idx));
+		this.nodesIndex = this.nodesIndex.filter(cur_id => cur_id != idx);
 		this.drawCurve();
 	}
 }
