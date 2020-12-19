@@ -1,4 +1,3 @@
-// TODO: allow remove character
 // TODO: show name around character, rotate
 // TODO: select 2 character by mousedown -> drag -> mouseup
 
@@ -263,7 +262,7 @@ class relationLinkList {
 		this.drawCurve();
 	}
 	removeNode(idx) {
-		this.data = this.data.filter(link => (link.idx1 != idx && link.idx2 != idx));
+		this.data = this.data.filter(link => (link.source.data()[0].idx != idx && link.target.data()[0].idx != idx));
 		this.nodesIndex = this.nodesIndex.filter(cur_id => cur_id != idx);
 		this.drawCurve();
 	}
