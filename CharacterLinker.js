@@ -16,27 +16,6 @@ function generateTransform(index, length, canvas_radius, node_radius, svg_el) {
 	return `translate(${p.x}, ${p.y})`;
 }
 
-function generateLabelTransform(index, length, node_radius, svg_el) {
-	let degree = index / length * 360;
-	let upshift = node_radius * 1.3;
-
-	let svg_transform = svg_el.createSVGTransform();
-	svg_transform.setTranslate(0, -upshift);
-	let M_translate = svg_transform.matrix;
-
-	let svg_transform2 = svg_el.createSVGTransform();
-	svg_transform2.setRotate(degree, 0, upshift);
-	let M_rotate = svg_transform2.matrix;
-
-	let p = svg_el.createSVGPoint();
-	p = p.matrixTransform(M_translate.multiply(M_rotate));
-
-	if (degree > 90 && degree < 270) {
-		degree -= 180; // flip
-	}
-	return `translate(${p.x}, ${p.y}) rotate(${degree})`;
-}
-
 function searchIndex(data, idx) {
 	return data.filter(d => d.idx == idx)[0];
 }
@@ -125,13 +104,28 @@ export class CharacterLinker {
 			.attr('x', nodeRadius * -1)
 			.attr('y', nodeRadius * -1);
 
-		// add name label at the bottom
+		// add name label among curved path
+		// A - arcs: x-radius y-radius x-axis-rotation large-arc-flag sweep-flag(clockwise) x y
+		// draw 2 half circle->full circle
+		let labelRadius = nodeRadius * 1.1;
+		new_nodes
+			// .append('def') // def path canot be transformed?
+			.append('path')
+			.attr('fill', 'none')
+			.attr('d',
+				`M 0 ${labelRadius} A ${labelRadius} ${labelRadius} 0 0 1 0 ${-labelRadius}`
+				+ ` A ${labelRadius} ${labelRadius} 0 0 1 0 ${labelRadius}`
+			)
+			.attr('transform', (d, index) => `rotate(${index / chars.length * 360})`)
+			.attr('id', d => `textpath_${d.idx}`);
 		new_nodes.append('text')
-			.text(d => d.name)
 			.attr('text-anchor', 'middle')
-			.attr('dominant-baseline', 'central')
-			.attr('transform', (d, index) => generateLabelTransform(index, chars.length, nodeRadius, this.svg_el))
-			.style('user-select', 'none');
+			// .attr('dominant-baseline', 'central')
+			.style('user-select', 'none')
+			.append('textPath')
+			.attr('href', (d) => `#textpath_${d.idx}`)
+			.attr('startOffset', '50%')
+			.text(d => d.name);
 
 		this.nodes = this.chars_layer.selectAll('.node'); // all nodes
 		this.nodes

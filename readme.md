@@ -30,6 +30,5 @@ sort links by color
 ## Unselect
 1. click [unselect]
 
-
-# other feature?
-rotate text (but don't flip)
+# TODO
+load asset (chacacter json) on url
