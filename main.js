@@ -86,6 +86,13 @@ addNode_btn.onclick = () => {
 };
 removeNode_btn.onclick = linker.removeNode.bind(linker);
 
+document.getElementById('load_img').addEventListener('change', function() {
+	if (this.files && this.files[0]) {
+		let img = this.files[0];
+		document.getElementById('new_node_img').value = URL.createObjectURL(img);
+	}
+});
+
 let colors_order = ['#ff0000', '#9933ff', '#ffff00', '#33cc33', '#000000'];
 document.getElementById('sort_btn').onclick = linker.sortLink.bind(linker, colors_order);
 
