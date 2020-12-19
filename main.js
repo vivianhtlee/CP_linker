@@ -35,6 +35,7 @@ for (let color_btn of color_shortcuts.children) {
 
 const selected_chars = document.getElementById('selected_chars');
 const selected_1_char = document.getElementById('cur_node_name');
+const addNode_btn = document.getElementById('addNode_btn');
 const removeNode_btn = document.getElementById('removeNode_btn');
 
 let selectChar_callback = (char1, char2) => {
@@ -53,7 +54,7 @@ let selectChar_callback = (char1, char2) => {
 		selected_chars.innerHTML = `${char1.name}, ${char2.name}`;
 		add_link_div.style.display = 'inline';
 	}else{
-		selected_chars.innerHTML = 'Select two characters';
+		selected_chars.innerHTML = 'Select two characters or drag between characters';
 		add_link_div.style.display = 'none';
 	}
 };
@@ -78,7 +79,7 @@ removeLink_btn.onclick = () => {
 	linker.removeLink.call(linker, color);
 };
 
-document.getElementById('addNode_btn').onclick = () => {
+addNode_btn.onclick = () => {
 	let new_name = document.getElementById('new_node_name').value;
 	let new_img = document.getElementById('new_node_img').value;
 	linker.addNode.call(linker, new_name, new_img);
@@ -87,3 +88,5 @@ removeNode_btn.onclick = linker.removeNode.bind(linker);
 
 let colors_order = ['#ff0000', '#9933ff', '#ffff00', '#33cc33', '#000000'];
 document.getElementById('sort_btn').onclick = linker.sortLink.bind(linker, colors_order);
+
+document.getElementById('unselect_btn').onclick = linker.unselectAllNodes.bind(linker);

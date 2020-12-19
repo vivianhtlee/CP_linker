@@ -84,6 +84,17 @@ export class CharacterLinker {
 	getOverallRadius() {
 		return this.svg_el.clientWidth / 2;
 	}
+
+	unselectNode(id) {
+		if (id < 0)
+			return;
+		this.nodes
+			.filter(cur_d => cur_d.idx == id)
+			.selectAll('.node_cir')
+			.attr('stroke', '#000000')
+			.attr('stroke-width', Math.max(2, this.getRadius() / 10));
+	}
+
 	plot_characters() {
 		// plot all character in circle after data is loaded
 		let chars = this.chars;
@@ -122,17 +133,8 @@ export class CharacterLinker {
 		this.nodes
 			.attr('transform', (d, index) => generateTransform(index, chars.length, overallRadius, nodeRadius, this.svg_el)); // update all node
 
-		const unselectNode = (id) => {
-			if (id < 0)
-				return;
-			this.nodes
-				.filter(cur_d => cur_d.idx == id)
-				.selectAll('.node_cir')
-				.attr('stroke', '#000000')
-				.attr('stroke-width', Math.max(2, nodeRadius / 10));
-		};
 		const selectNode = (evt, d) => {
-			unselectNode(this.node1);
+			this.unselectNode(this.node1);
 			this.node1 = this.node2;
 			this.node2 = d.idx;
 			if (this.node1 == this.node2 || this.node1 < 0) {
@@ -151,7 +153,8 @@ export class CharacterLinker {
 		this.nodes.on('click', selectNode);
 
 		const mousedownFunc = (evt, d) => {
-			if (this.node_mousedown > 0 )unselectNode(this.node_mousedown);
+			if (this.node_mousedown > 0 )
+				this.unselectNode(this.node_mousedown);
 			this.node_mousedown = d.idx;
 			this.nodes
 				.filter(cur_d => cur_d.idx == d.idx)
@@ -166,20 +169,15 @@ export class CharacterLinker {
 				if(this.node_mousedown != d.idx) {
 					let color = this.color_getter();
 					this.links_list.add(this.node_mousedown, d.idx, color, this.nodes);
-					unselectNode(this.node_mousedown);
-					// also clear clicked node
-					unselectNode(this.node1);
-					unselectNode(this.node2);
-					this.node1 = this.node2 = -1;
-					this.selectNode_cb(null, null);
-
+					this.unselectNode(this.node_mousedown);
+					this.unselectClickedNodes();
 				}
+				this.node_mousedown = -1;
 			}
-			this.node_mousedown = -1;
 		};
 		this.nodes.on('mousedown', mousedownFunc);
 		this.nodes.on('mouseup', mouseupFunc);
-		this.nodes.on('touchstart', mousedownFunc);
+		this.nodes.on('touchstart', mousedownFunc, {'passive': true});
 		this.nodes.on('touchend', mouseupFunc);
 
 		this.links_list.drawCurve();
@@ -215,6 +213,16 @@ export class CharacterLinker {
 	}
 	sortLink(colors_order) {
 		this.links_list.sort(colors_order);
+	}
+	unselectAllNodes() {
+		this.unselectNode(this.node_mousedown);
+		this.unselectClickedNodes();
+	}
+	unselectClickedNodes() {
+		this.unselectNode(this.node1);
+		this.unselectNode(this.node2);
+		this.node1 = this.node2 = -1;
+		this.selectNode_cb(null, null);
 	}
 	__test(test_src, color) {
 		this.node1 = test_src;
