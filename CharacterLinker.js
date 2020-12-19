@@ -30,7 +30,11 @@ function generateLabelTransform(index, length, node_radius, svg_el) {
 
 	let p = svg_el.createSVGPoint();
 	p = p.matrixTransform(M_translate.multiply(M_rotate));
-	return `translate(${p.x}, ${p.y})`;
+
+	if (degree > 90 && degree < 270) {
+		degree -= 180; // flip
+	}
+	return `translate(${p.x}, ${p.y}) rotate(${degree})`;
 }
 
 function searchIndex(data, idx) {
