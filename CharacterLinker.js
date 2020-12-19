@@ -75,6 +75,7 @@ export class CharacterLinker {
 			.filter(cur_d => cur_d.idx == id)
 			.selectAll('.node_cir')
 			.attr('stroke', '#000000')
+			.attr('stroke-opacity', 1)
 			.attr('stroke-width', Math.max(2, this.getRadius() / 10));
 	}
 
@@ -87,58 +88,67 @@ export class CharacterLinker {
 		let new_nodes = this.chars_layer.selectAll('.node').data(chars).enter()
 			.append('g')
 			.attr('class', 'node')
-			.attr('name', d => d.name); // it only return new nodes
+			.attr('name', d => d.name); // it only return new nodes, assign fixed attributes
+		this.nodes = this.chars_layer.selectAll('.node'); // all nodes, update attributes
+		this.nodes
+			.attr('transform', (d, index) => generateTransform(index, chars.length, overallRadius, nodeRadius, this.svg_el)); // update all node
 
 		new_nodes.append('circle')
-			.attr('r', nodeRadius)
 			.attr('class', 'node_cir')
 			.attr('stroke', '#000000')
+			.attr('stroke-opacity', 1);
+		this.nodes.selectAll('.node_cir')
+			.attr('r', nodeRadius)
 			.attr('stroke-width', Math.max(2, nodeRadius / 10));
 
 		new_nodes.append('image')
 			.attr('class', 'node_img')
 			.attr('xlink:href', d => d.img)
-			.attr('clip-path', 'circle(50%)')
+			.attr('clip-path', 'circle(50%)');
+		this.nodes.selectAll('.node_img')
 			.attr('width', nodeRadius * 2)
 			.attr('height', nodeRadius * 2)
 			.attr('x', nodeRadius * -1)
 			.attr('y', nodeRadius * -1);
 
 		// add name label among curved path
-		// A - arcs: x-radius y-radius x-axis-rotation large-arc-flag sweep-flag(clockwise) x y
-		// draw 2 half circle->full circle
 		let labelRadius = nodeRadius * 1;
 		new_nodes
 			// .append('def') // def path canot be transformed?
 			.append('path')
+			.attr('class', 'label_path')
 			.attr('fill', 'none')
-			.attr('d', (d, index) => {
-				let degree = index / chars.length;
-				let sweepFlag = (degree > 0.25 && degree < 0.75) ? 0 : 1;
-				return `M 0 ${labelRadius} A ${labelRadius} ${labelRadius} 0 0 ${sweepFlag} 0 ${-labelRadius}`
-				+ ` A ${labelRadius} ${labelRadius} 0 0 ${sweepFlag} 0 ${labelRadius}`;
-			})
-			.attr('transform', (d, index) => `rotate(${index / chars.length * 360})`)
 			.attr('id', d => `textpath_${d.idx}`);
 		new_nodes.append('text')
 			.attr('text-anchor', 'middle')
-			.attr('dominant-baseline', (d, index) => {
-				let degree = index / chars.length;
-				if(degree > 0.25 && degree < 0.75) {
-					return 'hanging';
-				}else{
-					return 'text-top';
-				}
-			})
 			.style('user-select', 'none')
 			.append('textPath')
 			.attr('href', (d) => `#textpath_${d.idx}`)
 			.attr('startOffset', '50%')
 			.text(d => d.name);
 
-		this.nodes = this.chars_layer.selectAll('.node'); // all nodes
-		this.nodes
-			.attr('transform', (d, index) => generateTransform(index, chars.length, overallRadius, nodeRadius, this.svg_el)); // update all node
+		this.nodes.each(function(d, index) { // to access index from nodes
+			d3.select(this).selectAll('.label_path')
+				.attr('d', () => {
+					// A - arcs: x-radius y-radius x-axis-rotation large-arc-flag sweep-flag(clockwise) x y
+					// draw 2 half circle->full circle
+					let degree = index / chars.length;
+					let sweepFlag = (degree > 0.25 && degree < 0.75) ? 0 : 1;
+					return `M 0 ${labelRadius} A ${labelRadius} ${labelRadius} 0 0 ${sweepFlag} 0 ${-labelRadius}`
+					+ ` A ${labelRadius} ${labelRadius} 0 0 ${sweepFlag} 0 ${labelRadius}`;
+				})
+				.attr('transform', `rotate(${index / chars.length * 360})`);
+
+			d3.select(this).selectAll('textPath')
+				.attr('dominant-baseline', () => {
+					let degree = index / chars.length;
+					if(degree > 0.25 && degree < 0.75) {
+						return 'hanging';
+					}else{
+						return 'text-top';
+					}
+				});
+		});
 
 		const selectNode = (evt, d) => {
 			this.unselectNode(this.node1);
