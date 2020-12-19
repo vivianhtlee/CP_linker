@@ -6,7 +6,6 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
     <meta http-equiv="Pragma" content="no-cache" />
     <meta http-equiv="Expires" content="0" />
-    <title>CP連線圖</title>
     <script src="https://d3js.org/d3.v6.min.js"></script>
 </head>
 
@@ -16,8 +15,8 @@
         <input type="color" id="color_input">
         <span id="selected_chars"></span>
         <div id="add_link_div">
-            <button type="button" id="addLink_btn">+</button>
-            <button type="button" id="removeLink_btn">-</button>
+            <input type="button" id="addLink_btn" value="+">
+            <input type="button" id="removeLink_btn" value="-">
         </div>
         <br>
         <div id="color_shortcuts">
@@ -28,24 +27,24 @@
             <input type="button" value="No, thank you." style="background-color:#000000;color:white">
         </div>
         <br>
-        <input type="button" value="Sort" id="sort_btn"><input type="button" value="Unselect" id="unselect_btn">
+        <input type="button" value="Sort 排序" id="sort_btn"><input type="button" value="Unselect 取消選取" id="unselect_btn">
     </div>
     <br>
     <div id="custom_node">
+        <!-- Add Character -->
         <div id="add_node_div">
-            <!-- Add Character -->
-            新增角色
+            <span>Add Character 新增角色</span>
             <br>
-            name: <input id="new_node_name" value='abc'> image:<input id="new_node_img" value="img/person-fill.svg">
+            Name: <input id="new_node_name" value='abc'> Icon:<input id="new_node_img" value="img/person-fill.svg">
             <input type="file" id="load_img"/>
             <input type="button" id="addNode_btn" value="+">
         </div>
         <br>
+        <!-- Remove Character -->
         <div id="remove_node_div">
-            <!-- Remove Character -->
-            移除角色
+            <span>Remove Character 移除角色</span>
             <br>
-            name: <span id="cur_node_name"></span> <input type="button" id="removeNode_btn" value="-">
+            Name: <span id="cur_node_name"></span> <input type="button" id="removeNode_btn" value="-">
         </div>
     </div>
     <script type="module" src="main.js"></script>

@@ -1,5 +1,35 @@
 import {CharacterLinker} from './CharacterLinker.js';
 
+// parse url query
+const urlParams = new URLSearchParams(window.location.search);
+let characters_json_file = urlParams.get('char'); // xxxx.html?char=<url>;
+if (!characters_json_file) characters_json_file = 'data/characters.json';
+let lang = urlParams.get('lang'); // xxxx.html?char=<url>;
+if (!lang) lang = 'en'; // or zh
+
+// Translate
+{
+	document.title = (lang != 'zh') ? 'CP diagram' : 'CP連線圖';
+
+	const color_shortcuts_buttons = document.getElementById('color_shortcuts').children;
+	let color_shortcuts_desc;
+	if (lang == 'zh') {
+		color_shortcuts_desc = ['主推, 好嗑', '不錯, 好吃', '無感/能接受', '更喜歡CP以外的關係(親情/友情)', '反感/雷點'];
+	}else{ // if(lang == 'en')
+		color_shortcuts_desc = ['Love it very much', 'Like it', 'acceptable', 'prefer non-romantic relationship', 'No, thank you'];
+	}
+	for (let i = 0; i < color_shortcuts_buttons.length; i++) {
+		let color_btn = color_shortcuts_buttons[i];
+		color_btn.value = color_shortcuts_desc[i];
+	}
+
+	document.getElementById('sort_btn').value = (lang != 'zh') ? 'Sort' : '排序';
+	document.getElementById('unselect_btn').value = (lang != 'zh') ? 'Unselect' : '取消選取';
+
+	document.getElementById('add_node_div').getElementsByTagName('span')[0].innerHTML = (lang != 'zh') ? 'Add Character' : '新增角色';
+	document.getElementById('remove_node_div').getElementsByTagName('span')[0].innerHTML = (lang != 'zh') ? 'Remove Character' : '移除角色';
+}
+
 const color_input = document.getElementById('color_input');
 
 /* color shortcut: change value of color input via buttons*/
@@ -35,12 +65,10 @@ const removeNode_btn = document.getElementById('removeNode_btn');
 
 let selectChar_callback = (char1, char2) => {
 	if(char2 == null) {
-		// selected_1_char.innerHTML = 'Select character';
-		selected_1_char.innerHTML = '選擇1個角色';
+		selected_1_char.innerHTML = (lang != 'zh') ? 'Select character' : '選擇1個角色';
 		removeNode_btn.style.display = 'none';
 	}else if (char1 != null) {
-		// selected_1_char.innerHTML = 'Click same character twice';
-		selected_1_char.innerHTML = '點選同一角色兩次';
+		selected_1_char.innerHTML = (lang != 'zh') ? 'Click same character twice' : '點選同一角色兩次';
 		removeNode_btn.style.display = 'none';
 	}else{
 		selected_1_char.innerHTML = char2.name;
@@ -51,8 +79,7 @@ let selectChar_callback = (char1, char2) => {
 		selected_chars.innerHTML = `${char1.name}, ${char2.name}`;
 		add_link_div.style.display = 'inline';
 	}else{
-		// selected_chars.innerHTML = 'Select or connect two characters';
-		selected_chars.innerHTML = '選擇或連接2個角色';
+		selected_chars.innerHTML = (lang != 'zh') ? 'Select or connect two characters' : '選擇或連接2個角色';
 		add_link_div.style.display = 'none';
 	}
 };
@@ -64,10 +91,6 @@ const color_getter = () => {
 
 let linker = new CharacterLinker(document.getElementById('svg'), selectChar_callback, color_getter);
 // load data
-const urlParams = new URLSearchParams(window.location.search);
-let characters_json_file = urlParams.get('char'); // xxxx.html?char=<url>;
-if (!characters_json_file) // use default
-	characters_json_file = 'data/characters.json';
 linker.load(characters_json_file);
 // setTimeout(() => {
 // 	linker.__test(25, color_input.value);

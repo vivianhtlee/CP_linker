@@ -39,3 +39,9 @@ linker.load('data/characters.json');
 ## Use different characters data via URL query
 `?char=<json file url>`
 e.g. `index.html?char=data/shorter_characters.json`
+
+## Switch language (English or Chinese)
+`?lang=<lang>`
+options: Egnlish `en`, Chinese `zh`
+default: english
+e.g. `index.html?lang=zh`
