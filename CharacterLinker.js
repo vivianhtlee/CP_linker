@@ -37,7 +37,8 @@ export class CharacterLinker {
 
 		this.svg = d3.select(svg_el);
 		this.links_list = new relationLinkList(this.svg, this.getNodes.bind(this), this.getRadius.bind(this));
-		this.chars_layer = this.svg.append('g');
+		this.dash_link_layer = this.svg.append('g').attr('name', 'temp_link');
+		this.chars_layer = this.svg.append('g').attr('name', 'char_nodes');
 	}
 	load(data_json) {
 		d3.json(data_json).then((data) => {
@@ -180,12 +181,12 @@ export class CharacterLinker {
 				.attr('stroke-opacity', 0.5)
 				.attr('stroke-width', Math.max(4, nodeRadius / 3));
 		};
-		const mouseupFunc = (evt, d) => {
-			this.node_mouseup = d.idx;
+		const dragTo = (evt, toIdx) => {
+			this.node_mouseup = toIdx;
 			if (this.node_mousedown >= 0 ) {
-				if(this.node_mousedown != d.idx) {
+				if(this.node_mousedown != toIdx) {
 					let color = this.color_getter();
-					this.links_list.add(this.node_mousedown, d.idx, color, this.nodes);
+					this.links_list.add(this.node_mousedown, toIdx, color, this.nodes);
 					this.unselectNode(this.node_mousedown);
 					this.unselectClickedNodes();
 				}
@@ -194,16 +195,28 @@ export class CharacterLinker {
 			this.node_mousedown = -1;
 			evt.stopPropagation(); // do not trigger svg mouseup
 		};
+		const mouseupFunc = (evt, d) => {
+			dragTo(evt, d.idx);
+		};
+		const touchendFunc = (evt) => {
+			let changedTouch = evt.changedTouches[0];
+			let touchendElement = document.elementFromPoint(changedTouch.clientX, changedTouch.clientY);
+			let touchendD3Data = d3.select(touchendElement).data()[0];
+			if (touchendD3Data && 'idx' in touchendD3Data)
+				dragTo(evt, touchendD3Data.idx);
+			// otherwise, it is not node, ignore
+		};
 		const releaseOnBgFunc = () => {
 			// unselect mousedown
 			this.unselectNode(this.node_mousedown);
 			this.node_mousedown = -1;
 		};
+
 		this.nodes.on('mousedown', mousedownFunc);
 		this.nodes.on('mouseup', mouseupFunc);
 		this.svg.on('mouseup', releaseOnBgFunc, {'capture': false}); // bubble, after nodes mouse up
 		this.nodes.on('touchstart', mousedownFunc, {'passive': true});
-		this.nodes.on('touchend', mouseupFunc);
+		this.nodes.on('touchend', touchendFunc);
 		this.svg.on('touchend', releaseOnBgFunc, {'capture': false});
 	}
 	addNode(new_name, new_img) {
