@@ -35,7 +35,7 @@ export class relationLinkList {
 		if (idx1 > idx2) {
 			[idx1, idx2] = [idx2, idx1];
 		}
-		this.data = this.data.filter(d => d.source.idx !== idx1 || d.target.idx2 !== idx2);
+		this.data = this.data.filter(d => d.source.data()[0].idx !== idx1 || d.target.data()[0].idx !== idx2);
 		this.drawCurve();
 	}
 	drawCurve() {
