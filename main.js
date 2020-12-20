@@ -1,5 +1,5 @@
 import {CharacterLinker} from './CharacterLinker.js';
-import {rgbToHex} from './utils.js';
+import {rgbToHex, svg_to_png} from './utils.js';
 
 // parse url query
 const urlParams = new URLSearchParams(window.location.search);
@@ -77,7 +77,8 @@ const color_getter = () => {
 	return color_input.value;
 };
 
-let linker = new CharacterLinker(document.getElementById('svg'), selectChar_callback, color_getter);
+const svg_el = document.getElementById('svg');
+let linker = new CharacterLinker(svg_el, selectChar_callback, color_getter);
 linker.load(characters_json_file); // load data
 // setTimeout(() => {
 // 	linker.__test(25, color_input.value);
@@ -110,3 +111,14 @@ let colors_order = ['#ff0000', '#9933ff', '#ffff00', '#33cc33', '#000000'];
 document.getElementById('sort_btn').onclick = linker.sortLink.bind(linker, colors_order);
 
 document.getElementById('unselect_btn').onclick = linker.unselectAllNodes.bind(linker);
+
+
+/* Generate Image for download */
+document.getElementById('generateImage_btn').onclick = ()=>{
+	let dl_link = document.getElementById('download_generated_image');
+	svg_to_png(svg_el, (imageURL)=>{
+		dl_link.href = imageURL;
+		dl_link.download = "CP_linker.jpg";
+		dl_link.style.display = 'inline';
+	});
+}

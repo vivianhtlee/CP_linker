@@ -1,5 +1,5 @@
 import {relationLinkList} from './RelationLinkList.js';
-import {getXY} from './utils.js';
+import {getXY, toDataURL} from './utils.js';
 
 function generateTransform(index, length, canvas_radius, node_radius, svg_el) {
 	let degree = index / length * 360;
@@ -51,7 +51,16 @@ export class CharacterLinker {
 					this.chars[idx].idx = idx;
 				}
 			}
-			this.plot_characters();
+
+			// image url -> fetched data url
+			Promise.all(this.chars.map(char=>{
+				return toDataURL(char.img)
+				.then(dataUrl => {
+					char.imgUrl = dataUrl;
+				})
+			})).then(()=>{
+				this.plot_characters();
+			});
 		});
 	}
 	getNodes() {
@@ -105,7 +114,7 @@ export class CharacterLinker {
 
 		new_nodes.append('image')
 			.attr('class', 'node_img')
-			.attr('xlink:href', d => d.img);
+			.attr('xlink:href', d => d.imgUrl || d.img);
 		this.nodes.selectAll('.node_img')
 			.attr('width', nodeRadius * 2)
 			.attr('height', nodeRadius * 2)
