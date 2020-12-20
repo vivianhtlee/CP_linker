@@ -262,13 +262,16 @@ export class CharacterLinker {
 	}
 	addNode(new_name, new_img) {
 		let new_idx = (this.chars.length>0) ? this.chars[this.chars.length - 1].idx + 1: 1;
-		this.chars.push({
-			'name': new_name,
-			'img': new_img,
-			'idx': new_idx
+		toDataURL(new_img).then(imgUrl=>{
+			this.chars.push({
+				'name': new_name,
+				'img': new_img,
+				'idx': new_idx,
+				'imgUrl': imgUrl,
+			});
+			this.plot_characters();
+			this.links_list.addNode(new_idx); // update linker data
 		});
-		this.plot_characters();
-		this.links_list.addNode(new_idx); // update linker data
 	}
 	removeNode() {
 		if(this.node1 >= 0 && this.node1 != this.node2)
