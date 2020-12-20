@@ -29,6 +29,9 @@ if (!lang) lang = 'en'; // or zh
 
 	document.getElementById('add_node_div').getElementsByTagName('span')[0].innerHTML = (lang != 'zh') ? 'Add Character' : '新增角色';
 	document.getElementById('remove_node_div').getElementsByTagName('span')[0].innerHTML = (lang != 'zh') ? 'Remove Character' : '移除角色';
+
+	document.getElementById('generateImage_btn').value = (lang != 'zh') ? 'Generate Image' : '生成圖片';
+	document.getElementById('download_generated_image').innerHTML = (lang != 'zh') ? 'Download' : '下載';
 }
 
 const color_input = document.getElementById('color_input');
