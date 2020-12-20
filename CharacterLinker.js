@@ -112,6 +112,8 @@ export class CharacterLinker {
 			.attr('x', nodeRadius * -1)
 			.attr('y', nodeRadius * -1)
 			.attr('clip-path', `circle(${nodeRadius})`); // patch: browser cannot update circle(50%) after resize
+		this.nodes.selectAll('.node_img')
+			.attr('clip-path', `circle(50%)`); // patch: some mobile browser cannot use circle(px)
 
 		// add name label among curved path
 		new_nodes
