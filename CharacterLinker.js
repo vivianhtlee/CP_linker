@@ -247,11 +247,11 @@ export class CharacterLinker {
 		};
 		const touchmoveFunc = (evt) => {
 			let changedTouch = evt.changedTouches[0];
-			let [x2, y2] = [changedTouch.clientX, changedTouch.clientY];
+			let [x2, y2] = [changedTouch.pageX, changedTouch.pageY];
 			movingTo(evt, x2, y2);
 		};
 		const mousemoveFunc = (evt) => {
-			let [x2, y2] = [evt.clientX, evt.clientY];
+			let [x2, y2] = [evt.offsetX, evt.offsetY];
 			movingTo(evt, x2, y2);
 		};
 		this.svg.on('mousemove', mousemoveFunc);
